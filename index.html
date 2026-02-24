@@ -3,88 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Selection</title>
+    <title>Bingo Lobby</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        .screen { display: none; }
-        .active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-width: 350px; margin: 20px auto; }
-        .cell { aspect-ratio: 1; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #444; }
-        .marked { background: #f39c12 !important; color: black; box-shadow: 0 0 10px #f39c12; }
-        .header-cell { background: #f39c12; color: black; font-weight: 900; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 60%; margin-bottom: 10px; }
-        button { padding: 12px 25px; background: #2ecc71; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; margin: 0; padding: 10px; }
+        .selection-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 350px; overflow-y: auto; background: #1e1e1e; padding: 10px; border-radius: 10px; }
+        .card-btn { background: #27ae60; color: white; border: none; padding: 15px 5px; border-radius: 5px; font-weight: bold; }
+        .selected { background: #f39c12 !important; border: 2px solid white; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-width: 320px; margin: 15px auto; }
+        .cell { aspect-ratio: 1; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border-radius: 4px; }
+        .marked { background: #f39c12 !important; color: black; }
+        .header { background: #e67e22; color: white; }
+        .screen { display: none; } .active { display: block; }
+        #timer { font-size: 30px; color: #f39c12; margin: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="selection-screen" class="screen active">
-        <h2>🎟️ Select Your Card</h2>
-        <p>Pick a card number between 1 and 200</p>
-        <input type="number" id="card-id" min="1" max="200" value="1"><br>
-        <button onclick="startGame()">Start Game</button>
+    <div id="lobby" class="screen active">
+        <h3>⏱ Game Starting In:</h3>
+        <div id="timer">20s</div>
+        <div class="selection-container" id="card-list"></div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <h3 id="playing-card-title">Card #--</h3>
-        <div id="ball">Waiting for Draw...</div>
-        <div class="grid" id="bingo-grid">
-            <div class="cell header-cell">B</div><div class="cell header-cell">I</div><div class="cell header-cell">N</div><div class="cell header-cell">G</div><div class="cell header-cell">O</div>
+    <div id="game" class="screen">
+        <h3 id="card-title">Card #--</h3>
+        <div id="ball">Draw: --</div>
+        <div class="grid" id="bingo-board">
+            <div class="cell header">B</div><div class="cell header">I</div><div class="cell header">N</div><div class="cell header">G</div><div class="cell header">O</div>
         </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        let selectedId = null;
+        let timeLeft = 20;
+        let marks = Array(25).fill(false);
+        marks[12] = true; 
 
-        let myNumbers = [];
-
-        function startGame() {
-            const id = document.getElementById('card-id').value;
-            document.getElementById('selection-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
-            document.getElementById('playing-card-title').innerText = "Playing Card #" + id;
-            generateStrictCard(id);
-            startAutoDraw();
+        // 1. Create 200 Buttons
+        const list = document.getElementById('card-list');
+        for (let i = 1; i <= 200; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'card-btn';
+            btn.innerText = i;
+            btn.onclick = () => {
+                selectedId = i;
+                document.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+            list.appendChild(btn);
         }
 
-        // Generate card using B(1-15), I(16-30), etc.
-        function generateStrictCard(seed) {
-            const grid = document.getElementById('bingo-grid');
-            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-            
-            // Generate 5 columns
-            let columns = ranges.map(range => {
-                let pool = Array.from({length: 15}, (_, i) => i + range[0]);
-                // Shuffle pool based on card ID (Simplified for demo)
-                return pool.sort(() => 0.5 - (seed / 200)).slice(0, 5);
-            });
-
-            for (let row = 0; row < 5; row++) {
-                for (let col = 0; col < 5; col++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    let val = columns[col][row];
-                    if (row === 2 && col === 2) {
-                        val = "FREE";
-                        cell.classList.add('marked');
-                    }
-                    cell.innerText = val;
-                    cell.id = `val-${val}`;
-                    myNumbers.push(val);
-                    grid.appendChild(cell);
+        // 2. Countdown Logic
+        const timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = timeLeft + "s";
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                if (!selectedId) {
+                    tg.showAlert("No card selected! Closing.");
+                    tg.close();
+                } else {
+                    startBingo();
                 }
             }
+        }, 1000);
+
+        function startBingo() {
+            tg.sendData(JSON.stringify({action: 'lock_card', cardId: selectedId}));
+            document.getElementById('lobby').classList.remove('active');
+            document.getElementById('game').classList.add('active');
+            document.getElementById('card-title').innerText = "Card #" + selectedId;
+            generateScrambledCard();
         }
 
-        function startAutoDraw() {
-            setInterval(() => {
-                const ball = Math.floor(Math.random() * 75) + 1;
-                document.getElementById('ball').innerText = "Current Ball: " + ball;
-                const target = document.getElementById(`val-${ball}`);
-                if (target) target.classList.add('marked');
-            }, 3000);
+        function generateScrambledCard() {
+            const board = document.getElementById('bingo-board');
+            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            let columns = ranges.map(r => {
+                let p = [];
+                for(let n=r[0]; n<=r[1]; n++) p.push(n);
+                return p.sort(() => Math.random() - 0.5).slice(0, 5);
+            });
+
+            for(let r=0; r<5; r++) {
+                for(let c=0; c<5; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    let val = columns[c][r];
+                    if(r===2 && c===2) val = "FREE";
+                    cell.innerText = val;
+                    cell.id = "num-" + val;
+                    if(val === "FREE") cell.classList.add('marked');
+                    board.appendChild(cell);
+                }
+            }
+            // Start Auto-Draw simulation
+            setInterval(drawBall, 3000);
+        }
+
+        function drawBall() {
+            const b = Math.floor(Math.random()*75)+1;
+            document.getElementById('ball').innerText = "Draw: " + b;
+            const target = document.getElementById("num-" + b);
+            if(target) target.classList.add('marked');
+            // Winner check would go here
         }
     </script>
 </body>
