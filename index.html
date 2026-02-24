@@ -5,74 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #e3d5f0; margin: 0; text-align: center; color: #4a0072; }
+        body { font-family: sans-serif; background: #d1b3e0; margin: 0; text-align: center; }
         .screen { display: none; } .active { display: block; }
-        .selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; max-height: 85vh; overflow-y: auto; }
+        .selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; max-height: 80vh; overflow-y: auto; }
         .card-btn { background: #6a1b9a; color: white; border: none; padding: 15px 5px; border-radius: 8px; font-weight: bold; }
         .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 5px; border-bottom: 2px solid #a4508b; }
-        .stat-box { border: 1px solid #a4508b; border-radius: 4px; padding: 2px; font-size: 9px; font-weight: bold; }
-        .stat-val { display: block; font-size: 12px; color: #a4508b; }
+        .stat-box { border: 1px solid #a4508b; border-radius: 4px; padding: 2px; font-size: 9px; }
+        .stat-val { display: block; font-size: 12px; color: #a4508b; font-weight: bold; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #fff; padding: 5px; margin: 10px; border-radius: 5px; }
-        .cell { aspect-ratio: 1; background: #eee; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
-        .marked { background: #ff8c00 !important; color: white !important; }
+        .cell { aspect-ratio: 1; background: #eee; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .marked { background: #ff8c00 !important; color: white; }
     </style>
 </head>
 <body>
     <div id="select-screen" class="screen active">
-        <h3 style="margin-top:20px;">🎟 Select Your Card (1-200)</h3>
+        <h3 style="margin-top:20px;">🎟 SELECT A CARD</h3>
         <div class="selection-grid" id="btn-container"></div>
     </div>
+
     <div id="game-screen" class="screen">
         <div class="dashboard">
             <div class="stat-box">Derash<span class="stat-val" id="derash">0</span></div>
             <div class="stat-box">Players<span class="stat-val" id="players">0</span></div>
             <div class="stat-box">Bet<span class="stat-val">10</span></div>
             <div class="stat-box">Call<span class="stat-val" id="call-num">0</span></div>
-            <div class="stat-box">Card<span class="stat-val" id="card-display">--</span></div>
+            <div class="stat-box">Card<span class="stat-val" id="my-card">--</span></div>
         </div>
-        <div id="status-msg" style="padding:10px; font-weight:bold;">Waiting...</div>
-        <div class="grid" id="board">
-            <div class="cell" style="background:#ffea00">B</div><div class="cell" style="background:#00c853">I</div>
-            <div class="cell" style="background:#2962ff">N</div><div class="cell" style="background:#d50000">G</div>
-            <div class="cell" style="background:#aa00ff">O</div>
-        </div>
+        <div id="status-msg" style="padding:15px; font-weight:bold; font-size:20px;"></div>
+        <div class="grid" id="board"></div>
     </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         const params = new URLSearchParams(window.location.search);
-        let myMarks = Array(25).fill(false); myMarks[12] = true;
-        let myId = null;
-
-        // 1. Setup Dashboard
+        
+        // SYNC: Get the real time from the bot's URL
+        let timeLeft = parseInt(params.get('time')) || 20;
+        const gameStatus = params.get('status') || "waiting";
         document.getElementById('players').innerText = params.get('players') || "0";
         document.getElementById('derash').innerText = params.get('derash') || "0";
-        let timeLeft = parseInt(params.get('time')) || 20;
 
-        // 2. Generate 200 Buttons
+        // Generate 200 Selection Buttons
         const container = document.getElementById('btn-container');
         for (let i = 1; i <= 200; i++) {
             const btn = document.createElement('button');
             btn.className = 'card-btn'; btn.innerText = i;
             btn.onclick = () => {
-                myId = i;
                 tg.sendData(JSON.stringify({action: 'lock_card', cardId: i}));
                 document.getElementById('select-screen').classList.remove('active');
                 document.getElementById('game-screen').classList.add('active');
-                document.getElementById('card-display').innerText = i;
-                buildCard();
-                startCountdown();
+                document.getElementById('my-card').innerText = i;
+                initGame();
             };
             container.appendChild(btn);
         }
 
-        function buildCard() {
-            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-            for(let r=0; r<5; r++){
-                for(let c=0; c<5; c++){
-                    let val = Math.floor(Math.random()*(ranges[c][1]-ranges[c][0]+1))+ranges[c][0];
-                    if(r===2 && c===2) val="FREE";
-                    const cell = document.createElement('div');
-                    cell.className = 'cell'; cell.innerText = val; cell.id = "n-"+val;
-                    cell.setAttribute('data-idx', (r*5)+c);
-                    if(val==="FREE") cell.
-                        
+        function initGame() {
+            // Build Bingo Grid...
+            const board = document.getElementById('board');
+            for(let i=0; i<25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell'; cell.innerText = Math.floor(Math.random()*75)+1;
+                board.appendChild(cell);
+            }
+
+            // Sync Countdown
+            const timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('status-msg').innerText = "Game Starts in: " + timeLeft + "s";
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('status-msg').innerText = "GAME STARTED!";
+                    // Automatic ball drawing logic starts here...
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
