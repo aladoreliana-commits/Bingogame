@@ -19,7 +19,7 @@
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #fff; padding: 5px; margin: 10px; border-radius: 5px; }
         .cell { aspect-ratio: 1; background: #f3e5f5; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; }
         .header { color: white; font-size: 18px; }
-        .marked { background: #ff8c00 !important; color: white !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
+        .marked { background: #ff8c00 !important; color: white !important; }
     </style>
 </head>
 <body>
@@ -27,6 +27,7 @@
         <h3 style="margin-top:20px;">🎟 SELECT A CARD (1-200)</h3>
         <div class="selection-grid" id="btn-container"></div>
     </div>
+
     <div id="game-screen" class="screen">
         <div class="dashboard">
             <div class="stat-box">Derash<span class="stat-val" id="derash">0</span></div>
@@ -48,9 +49,12 @@
     <script>
         const tg = window.Telegram.WebApp;
         const params = new URLSearchParams(window.location.search);
-        let myMarks = Array(25).fill(false); myMarks[12] = true;
+        let myMarks = Array(25).fill(false); myMarks[12] = true; 
         let callHistory = [];
         let timeLeft = parseInt(params.get('time')) || 20;
+
+        document.getElementById('players').innerText = params.get('players') || "0";
+        document.getElementById('derash').innerText = params.get('derash') || "0";
 
         function seededRandom(seed) {
             let x = Math.sin(seed++) * 10000;
@@ -65,35 +69,35 @@
                 document.getElementById('select-screen').classList.remove('active');
                 document.getElementById('game-screen').classList.add('active');
                 document.getElementById('my-card-id').innerText = i;
-                generateNoRepeatCard(i);
+                generateSolidUniqueCard(i);
                 startLobbyTimer();
             };
             container.appendChild(btn);
         }
 
-        function generateNoRepeatCard(cardId) {
+        function generateSolidUniqueCard(cardId) {
             const board = document.getElementById('board');
-            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-            let currentSeed = cardId * 1000; 
+            const ranges = [[1,15],[16,30],[31,45],[46,60],[61,75]];
+            let currentSeed = cardId * 555; 
+            let finalGrid = [];
 
-            // STEP 1: Generate 5 UNIQUE numbers for each column first
-            let colData = [];
+            // Generate Columns correctly
             for (let c = 0; c < 5; c++) {
-                let pool = [];
+                let colPool = [];
                 let [min, max] = ranges[c];
-                while (pool.length < 5) {
+                while (colPool.length < 5) {
                     let val = Math.floor(seededRandom(currentSeed++) * (max - min + 1)) + min;
-                    if (!pool.includes(val)) pool.push(val); // Strict unique check
+                    if (!colPool.includes(val)) colPool.push(val); // STOPS REPEATS
                 }
-                colData.push(pool);
+                finalGrid.push(colPool);
             }
 
-            // STEP 2: Place numbers into the board rows
+            // Render to DOM
             for (let r = 0; r < 5; r++) {
                 for (let c = 0; c < 5; c++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
-                    let val = colData[c][r];
+                    let val = finalGrid[c][r];
                     if (r === 2 && c === 2) { val = "FREE"; cell.classList.add('marked'); }
                     cell.innerText = val; cell.id = "n-" + val;
                     cell.setAttribute('data-idx', (r * 5) + c);
@@ -112,25 +116,29 @@
 
         function startCallingBalls() {
             document.getElementById('status-msg').innerText = "LIVE!";
-            let totalCalls = 0; let usedBalls = [];
+            let usedBalls = [];
             const drawInterval = setInterval(() => {
                 if (usedBalls.length >= 75) return clearInterval(drawInterval);
-                totalCalls++; document.getElementById('call-count').innerText = totalCalls;
                 let ball;
                 do { ball = Math.floor(Math.random() * 75) + 1; } while (usedBalls.includes(ball));
                 usedBalls.push(ball);
+                
                 document.getElementById('now-calling').innerText = ball;
+                document.getElementById('call-count').innerText = usedBalls.length;
+                
                 if (callHistory.length >= 3) callHistory.shift();
                 callHistory.push(ball);
                 const historyDivs = document.getElementById('history').children;
-                for (let i = 0; i < 3; i++) { historyDivs[i].innerText = callHistory[i] || "-"; }
+                for (let i = 0; i < 3; i++) historyDivs[i].innerText = callHistory[i] || "-";
+
                 let target = document.getElementById("n-" + ball);
                 if (target) {
                     target.classList.add('marked');
                     myMarks[target.getAttribute('data-idx')] = true;
                     if (checkWinner()) { 
-                        clearInterval(drawInterval); document.getElementById('status-msg').innerText = "BINGO!!";
-                        tg.sendData(JSON.stringify({action:'bingo_win', cardId: document.getElementById('my-card-id').innerText})); 
+                        clearInterval(drawInterval); 
+                        document.getElementById('status-msg').innerText = "BINGO!!";
+                        tg.sendData(JSON.stringify({action:'bingo_win'})); 
                     }
                 }
             }, 4000); 
