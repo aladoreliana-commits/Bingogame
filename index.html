@@ -3,37 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Hall</title>
+    <title>Bingo Selection</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px; }
-        .cell { aspect-ratio: 1; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
+        .screen { display: none; }
+        .active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-width: 350px; margin: 20px auto; }
+        .cell { aspect-ratio: 1; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; font-size: 16px; border: 1px solid #444; }
         .marked { background: #f39c12 !important; color: black; box-shadow: 0 0 10px #f39c12; }
+        .header-cell { background: #f39c12; color: black; font-weight: 900; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 60%; margin-bottom: 10px; }
+        button { padding: 12px 25px; background: #2ecc71; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h3>🎰 Bingo Hall</h3>
-    <div id="ball">Draw: --</div>
-    <div class="grid" id="card"></div>
+
+    <div id="selection-screen" class="screen active">
+        <h2>🎟️ Select Your Card</h2>
+        <p>Pick a card number between 1 and 200</p>
+        <input type="number" id="card-id" min="1" max="200" value="1"><br>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <h3 id="playing-card-title">Card #--</h3>
+        <div id="ball">Waiting for Draw...</div>
+        <div class="grid" id="bingo-grid">
+            <div class="cell header-cell">B</div><div class="cell header-cell">I</div><div class="cell header-cell">N</div><div class="cell header-cell">G</div><div class="cell header-cell">O</div>
+        </div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        const grid = document.getElementById('card');
-        const nums = [];
-        for(let i=0; i<25; i++) {
-            const v = i===12 ? "FREE" : Math.floor(Math.random()*75)+1;
-            nums.push(v);
-            const c = document.createElement('div');
-            c.className = 'cell' + (v==="FREE"?" marked":"");
-            c.id = 'cell-'+i; c.innerText = v;
-            grid.appendChild(c);
+
+        let myNumbers = [];
+
+        function startGame() {
+            const id = document.getElementById('card-id').value;
+            document.getElementById('selection-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            document.getElementById('playing-card-title').innerText = "Playing Card #" + id;
+            generateStrictCard(id);
+            startAutoDraw();
         }
-        setInterval(() => {
-            const b = Math.floor(Math.random()*75)+1;
-            document.getElementById('ball').innerText = "Draw: " + b;
-            nums.forEach((v, i) => { if(v === b) document.getElementById('cell-'+i).classList.add('marked'); });
-        }, 3000);
+
+        // Generate card using B(1-15), I(16-30), etc.
+        function generateStrictCard(seed) {
+            const grid = document.getElementById('bingo-grid');
+            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            
+            // Generate 5 columns
+            let columns = ranges.map(range => {
+                let pool = Array.from({length: 15}, (_, i) => i + range[0]);
+                // Shuffle pool based on card ID (Simplified for demo)
+                return pool.sort(() => 0.5 - (seed / 200)).slice(0, 5);
+            });
+
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    let val = columns[col][row];
+                    if (row === 2 && col === 2) {
+                        val = "FREE";
+                        cell.classList.add('marked');
+                    }
+                    cell.innerText = val;
+                    cell.id = `val-${val}`;
+                    myNumbers.push(val);
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function startAutoDraw() {
+            setInterval(() => {
+                const ball = Math.floor(Math.random() * 75) + 1;
+                document.getElementById('ball').innerText = "Current Ball: " + ball;
+                const target = document.getElementById(`val-${ball}`);
+                if (target) target.classList.add('marked');
+            }, 3000);
+        }
     </script>
 </body>
 </html>
