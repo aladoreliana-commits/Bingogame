@@ -5,106 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #d1b3e0; margin: 0; text-align: center; color: #4a0072; }
-        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 5px; gap: 3px; border-bottom: 2px solid #a4508b; }
+        body { font-family: sans-serif; background: #e3d5f0; margin: 0; text-align: center; color: #4a0072; }
+        .screen { display: none; } .active { display: block; }
+        .selection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; max-height: 85vh; overflow-y: auto; }
+        .card-btn { background: #6a1b9a; color: white; border: none; padding: 15px 5px; border-radius: 8px; font-weight: bold; }
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 5px; border-bottom: 2px solid #a4508b; }
         .stat-box { border: 1px solid #a4508b; border-radius: 4px; padding: 2px; font-size: 9px; font-weight: bold; }
         .stat-val { display: block; font-size: 12px; color: #a4508b; }
-        .current-call { background: #6a1b9a; color: white; margin: 10px; padding: 15px; border-radius: 40px; }
-        .ball { width: 45px; height: 45px; background: #ff8f00; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 20px; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #fff; padding: 5px; margin: 10px; border-radius: 5px; }
         .cell { aspect-ratio: 1; background: #eee; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
-        .marked { background: #ff8c00 !important; color: white !important; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .marked { background: #ff8c00 !important; color: white !important; }
     </style>
 </head>
 <body>
-
-    <div class="dashboard">
-        <div class="stat-box">Derash<span class="stat-val" id="derash">0</span></div>
-        <div class="stat-box">Players<span class="stat-val" id="players">0</span></div>
-        <div class="stat-box">Bet<span class="stat-val">10</span></div>
-        <div class="stat-box">Call<span class="stat-val" id="call-num">0</span></div>
-        <div class="stat-box">Game №<span class="stat-val">1</span></div>
+    <div id="select-screen" class="screen active">
+        <h3 style="margin-top:20px;">🎟 Select Your Card (1-200)</h3>
+        <div class="selection-grid" id="btn-container"></div>
     </div>
-
-    <div class="current-call">
-        <div id="status-msg">Starting...</div>
-        <div class="ball" id="current-ball">--</div>
+    <div id="game-screen" class="screen">
+        <div class="dashboard">
+            <div class="stat-box">Derash<span class="stat-val" id="derash">0</span></div>
+            <div class="stat-box">Players<span class="stat-val" id="players">0</span></div>
+            <div class="stat-box">Bet<span class="stat-val">10</span></div>
+            <div class="stat-box">Call<span class="stat-val" id="call-num">0</span></div>
+            <div class="stat-box">Card<span class="stat-val" id="card-display">--</span></div>
+        </div>
+        <div id="status-msg" style="padding:10px; font-weight:bold;">Waiting...</div>
+        <div class="grid" id="board">
+            <div class="cell" style="background:#ffea00">B</div><div class="cell" style="background:#00c853">I</div>
+            <div class="cell" style="background:#2962ff">N</div><div class="cell" style="background:#d50000">G</div>
+            <div class="cell" style="background:#aa00ff">O</div>
+        </div>
     </div>
-
-    <div class="grid" id="board">
-        <div class="cell" style="background:#ffea00">B</div><div class="cell" style="background:#00c853">I</div>
-        <div class="cell" style="background:#2962ff">N</div><div class="cell" style="background:#d50000">G</div>
-        <div class="cell" style="background:#aa00ff">O</div>
-    </div>
-
     <script>
         const tg = window.Telegram.WebApp;
         const params = new URLSearchParams(window.location.search);
-        
-        // 1. READ REAL DATA
-        const players = params.get('players') || "0";
-        const derash = params.get('derash') || "0";
-        const status = params.get('status') || "waiting";
+        let myMarks = Array(25).fill(false); myMarks[12] = true;
+        let myId = null;
+
+        // 1. Setup Dashboard
+        document.getElementById('players').innerText = params.get('players') || "0";
+        document.getElementById('derash').innerText = params.get('derash') || "0";
         let timeLeft = parseInt(params.get('time')) || 20;
 
-        document.getElementById('players').innerText = players;
-        document.getElementById('derash').innerText = derash;
-
-        // 2. SCRAMBLED CARD GENERATION
-        const board = document.getElementById('board');
-        const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-        let myMarks = Array(25).fill(false);
-        myMarks[12] = true;
-
-        for(let r=0; r<5; r++){
-            for(let c=0; c<5; c++){
-                let val = Math.floor(Math.random()*(ranges[c][1]-ranges[c][0]+1))+ranges[c][0];
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                if(r===2 && c===2) { val="FREE"; cell.classList.add('marked'); }
-                cell.innerText = val;
-                cell.id = "n-" + val;
-                cell.setAttribute('data-idx', (r*5)+c);
-                board.appendChild(cell);
-            }
+        // 2. Generate 200 Buttons
+        const container = document.getElementById('btn-container');
+        for (let i = 1; i <= 200; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'card-btn'; btn.innerText = i;
+            btn.onclick = () => {
+                myId = i;
+                tg.sendData(JSON.stringify({action: 'lock_card', cardId: i}));
+                document.getElementById('select-screen').classList.remove('active');
+                document.getElementById('game-screen').classList.add('active');
+                document.getElementById('card-display').innerText = i;
+                buildCard();
+                startCountdown();
+            };
+            container.appendChild(btn);
         }
 
-        // 3. GAME MODES
-        if(status === "waiting") {
-            const timer = setInterval(() => {
-                timeLeft--;
-                document.getElementById('status-msg').innerText = "Next Round in: " + timeLeft + "s";
-                if(timeLeft <= 0) { clearInterval(timer); location.reload(); }
-            }, 1000);
-        } else {
-            document.getElementById('status-msg').innerText = "LIVE CALL";
-            startDrawing();
-        }
-
-        function startDrawing() {
-            let calls = 0;
-            const drawInterval = setInterval(() => {
-                calls++;
-                document.getElementById('call-num').innerText = calls;
-                let ball = Math.floor(Math.random()*75)+1;
-                document.getElementById('current-ball').innerText = ball;
-                
-                let target = document.getElementById("n-"+ball);
-                if(target) {
-                    target.classList.add('marked');
-                    myMarks[target.getAttribute('data-idx')] = true;
-                    if(checkBingo()) {
-                        clearInterval(drawInterval);
-                        tg.sendData(JSON.stringify({action:'bingo_win', cardId: 1}));
-                    }
-                }
-            }, 4000);
-        }
-
-        function checkBingo() {
-            const lines = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20],[0,4,20,24]];
-            return lines.some(line => line.every(idx => myMarks[idx]));
-        }
-    </script>
-</body>
-</html>
+        function buildCard() {
+            const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
+            for(let r=0; r<5; r++){
+                for(let c=0; c<5; c++){
+                    let val = Math.floor(Math.random()*(ranges[c][1]-ranges[c][0]+1))+ranges[c][0];
+                    if(r===2 && c===2) val="FREE";
+                    const cell = document.createElement('div');
+                    cell.className = 'cell'; cell.innerText = val; cell.id = "n-"+val;
+                    cell.setAttribute('data-idx', (r*5)+c);
+                    if(val==="FREE") cell.
+                        
