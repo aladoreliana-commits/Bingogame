@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Hall</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px; }
+        .cell { aspect-ratio: 1; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 5px; font-weight: bold; }
+        .marked { background: #f39c12 !important; color: black; box-shadow: 0 0 10px #f39c12; }
+    </style>
+</head>
+<body>
+    <h3>🎰 Bingo Hall</h3>
+    <div id="ball">Draw: --</div>
+    <div class="grid" id="card"></div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const grid = document.getElementById('card');
+        const nums = [];
+        for(let i=0; i<25; i++) {
+            const v = i===12 ? "FREE" : Math.floor(Math.random()*75)+1;
+            nums.push(v);
+            const c = document.createElement('div');
+            c.className = 'cell' + (v==="FREE"?" marked":"");
+            c.id = 'cell-'+i; c.innerText = v;
+            grid.appendChild(c);
+        }
+        setInterval(() => {
+            const b = Math.floor(Math.random()*75)+1;
+            document.getElementById('ball').innerText = "Draw: " + b;
+            nums.forEach((v, i) => { if(v === b) document.getElementById('cell-'+i).classList.add('marked'); });
+        }, 3000);
+    </script>
+</body>
+</html>
