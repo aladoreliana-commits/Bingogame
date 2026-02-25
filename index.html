@@ -6,83 +6,103 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
 
-        /* SELECTION SCREEN (1-200) */
+        /* SELECTION SCREEN & TIMER */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
-        .selection-header { padding: 10px; background: white; text-align: center; font-weight: bold; color: var(--joy-purple); }
+        .timer-banner { background: var(--joy-red); color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 18px; }
         .grid-1-200 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px; overflow-y: auto; flex-grow: 1; }
-        .card-option { background: white; padding: 10px; text-align: center; border-radius: 8px; font-weight: bold; border: 2px solid transparent; }
+        .card-option { background: white; padding: 10px; text-align: center; border-radius: 8px; font-weight: bold; border: 2px solid transparent; position: relative; }
         .card-option.selected { border-color: var(--joy-orange); background: #fff3e0; }
+        .card-option.taken { opacity: 0.5; background: #ddd; pointer-events: none; }
 
-        /* TOP SECTION: SLIM */
+        /* GAME LAYOUT */
         .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 5px; background: white; height: 35px; }
         .stat-box { text-align: center; font-size: 9px; color: #777; }
         .stat-value { display: block; font-weight: bold; color: var(--joy-purple); font-size: 11px; }
-
-        .call-history-section { background: white; border-radius: 15px; padding: 5px; margin: 5px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .call-history-section { background: white; border-radius: 15px; padding: 5px; margin: 5px; display: flex; flex-direction: column; align-items: center; }
         .current-call-display { background: var(--joy-purple); color: white; border-radius: 50px; width: 100%; height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-sizing: border-box; }
-        .current-call-label { font-weight: bold; font-size: 16px; }
         .call-ball-large { background: var(--joy-orange); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 2px solid white; }
 
-        /* GAME BODY: FIXED WIDTHS */
-        .game-body { display: flex; width: 100%; height: calc(100vh - 120px); box-sizing: border-box; padding: 2px; }
+        .game-body { display: flex; width: 100%; height: calc(100vh - 120px); padding: 2px; box-sizing: border-box; }
+        .side-board-full { width: 52% !important; background: #bdc3c7; border-radius: 8px; padding: 2px; display: grid; grid-template-rows: auto 1fr; }
+        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 12px; }
+        .numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
+        .num-cell { background: white; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .num-cell.called { background: var(--joy-orange); color: white; }
 
-        /* LEFT SIDE: WIDE BUT FITS */
-        .side-board-full { width: 55% !important; background: #bdc3c7; border-radius: 8px; padding: 2px; display: flex; flex-direction: column; box-sizing: border-box; }
-        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
-        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 2px; font-size: 12px; }
-        .col-B { background: #f1c40f !important; } .col-I { background: #27ae60 !important; } 
-        .col-N { background: #2980b9 !important; } .col-G { background: #c0392b !important; } .col-O { background: #8e44ad !important; }
-
-        .numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; flex-grow: 1; }
-        .num-cell { background: white; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; border-radius: 1px; color: #333; }
-
-        /* RIGHT SIDE: SMALL PLAYER CARD */
-        .player-area { width: 45%; display: flex; flex-direction: column; align-items: center; padding: 2px; box-sizing: border-box; }
-        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 5px; border-radius: 8px; width: 100%; }
+        .player-area { width: 48%; display: flex; flex-direction: column; align-items: center; }
+        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 5px; border-radius: 8px; width: 95%; }
         .card-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border-radius: 50%; }
+        .card-cell.marked { background: var(--joy-green); color: white; }
         
-        .bingo-btn { margin-top: 10px; width: 90%; height: 40px; background: #ccc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        .bingo-btn { margin-top: 10px; width: 90%; height: 45px; background: #ccc; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; pointer-events: none; }
+        .bingo-btn.active { background: var(--joy-green); pointer-events: auto; box-shadow: 0 0 15px var(--joy-green); }
+
+        /* WIN POPUP */
+        #win-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="selection-screen">
-        <div class="selection-header">CHOOSE YOUR CARD (1-200)</div>
+        <div class="timer-banner">NEXT GAME IN: <span id="countdown">20</span>s</div>
         <div class="grid-1-200" id="selectionGrid"></div>
-        <div style="padding: 10px;"><button onclick="startGame()" style="width:100%; height:50px; background:var(--joy-purple); color:white; border-radius:10px; border:none; font-weight:bold;">START GAME</button></div>
+    </div>
+
+    <div id="win-overlay">
+        <h1 style="color:var(--joy-orange)">BINGO!</h1>
+        <p id="winner-text" style="font-size: 20px;"></p>
+        <p>Returning to lobby in 5s...</p>
     </div>
 
     <div class="header-stats">
         <div class="stat-box"><span class="stat-value">920</span>DERASH</div>
-        <div class="stat-box"><span class="stat-value">115</span>PLAYERS</div>
+        <div class="stat-box"><span class="stat-value" id="player-count">115</span>PLAYERS</div>
         <div class="stat-box"><span class="stat-value">10</span>BET</div>
-        <div class="stat-box"><span class="stat-value">0</span>CALL</div>
+        <div class="stat-box"><span class="stat-value" id="call-count">0</span>CALL</div>
         <div class="stat-box"><span class="stat-value">1 of 1</span>GAME</div>
     </div>
 
     <div class="call-history-section">
         <div class="current-call-display">
             <div class="current-call-label">Current Call</div>
-            <div class="call-ball-large">--</div>
+            <div class="call-ball-large" id="mainBall">--</div>
         </div>
     </div>
 
     <div class="game-body">
         <div class="side-board-full">
             <div class="letters-header">
-                <div class="letter-box col-B">B</div><div class="letter-box col-I">I</div>
-                <div class="letter-box col-N">N</div><div class="letter-box col-G">G</div><div class="letter-box col-O">O</div>
+                <div class="letter-box" style="background:#f1c40f">B</div><div class="letter-box" style="background:#27ae60">I</div>
+                <div class="letter-box" style="background:#2980b9">N</div><div class="letter-box" style="background:#c0392b">G</div><div class="letter-box" style="background:#8e44ad">O</div>
             </div>
             <div class="numbers-grid" id="masterBoard"></div>
         </div>
         <div class="player-area">
             <div class="card-grid" id="playerCard"></div>
-            <button class="bingo-btn">BINGO</button>
+            <p id="card-id-label" style="font-size:10px; margin:5px 0;">Card #--</p>
+            <button class="bingo-btn" id="bingoBtn" onclick="claimWin()">BINGO</button>
         </div>
     </div>
 
     <script>
-        // Setup 1-200 Selection
+        let selectedCardId = null;
+        let timeLeft = 20;
+        let calledNumbers = [];
+        let playerMarks = new Set();
+        let gameActive = false;
+
+        // 1. LOBBY TIMER
+        const timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('countdown').innerText = timeLeft;
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                startBingoGame();
+            }
+        }, 1000);
+
+        // 2. SELECTION LOGIC
         const selGrid = document.getElementById('selectionGrid');
         for(let i=1; i<=200; i++) {
             const div = document.createElement('div');
@@ -91,35 +111,93 @@
             div.onclick = () => {
                 document.querySelectorAll('.card-option').forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
+                selectedCardId = i;
+                document.getElementById('card-id-label').innerText = "Card #" + i;
             };
             selGrid.appendChild(div);
         }
 
-        function startGame() {
+        function startBingoGame() {
+            if(!selectedCardId) selectedCardId = Math.floor(Math.random() * 200) + 1;
             document.getElementById('selection-screen').style.display = 'none';
+            gameActive = true;
+            generatePlayerCard();
+            runCallLoop();
         }
 
-        // Setup 1-75 Master Board
+        // 3. MASTER BOARD & CARD GEN
         const board = document.getElementById('masterBoard');
         for (let i = 1; i <= 15; i++) {
             for (let col = 0; col < 5; col++) {
                 const num = i + (col * 15);
                 const cell = document.createElement('div');
                 cell.className = 'num-cell';
+                cell.id = 'm-' + num;
                 cell.textContent = num;
                 board.appendChild(cell);
             }
         }
 
-        // Setup Player Card
-        const card = document.getElementById('playerCard');
-        const mockNums = [15,28,33,53,62,6,20,31,55,64,2,16,'F',60,70,12,25,41,58,75,3,30,37,56,72];
-        mockNums.forEach(n => {
-            const cell = document.createElement('div');
-            cell.className = 'card-cell';
-            cell.textContent = n;
-            card.appendChild(cell);
-        });
+        function generatePlayerCard() {
+            const cardGrid = document.getElementById('playerCard');
+            const ranges = [[1,15],[16,30],[31,45],[46,60],[61,75]];
+            let cardNums = [];
+            for(let row=0; row<5; row++) {
+                for(let col=0; col<5; col++) {
+                    if(row===2 && col===2) cardNums.push('F');
+                    else cardNums.push(Math.floor(Math.random() * (ranges[col][1] - ranges[col][0])) + ranges[col][0]);
+                }
+            }
+            cardNums.forEach((n, idx) => {
+                const cell = document.createElement('div');
+                cell.className = n === 'F' ? 'card-cell marked' : 'card-cell';
+                cell.textContent = n;
+                if(n === 'F') playerMarks.add(idx);
+                cell.onclick = () => {
+                    if(calledNumbers.includes(parseInt(n))) {
+                        cell.classList.add('marked');
+                        playerMarks.add(idx);
+                        checkWinPatterns();
+                    }
+                };
+                cardGrid.appendChild(cell);
+            });
+        }
+
+        // 4. CALL LOOP
+        function runCallLoop() {
+            if(!gameActive) return;
+            let pool = Array.from({length: 75}, (_, i) => i + 1);
+            const callInterval = setInterval(() => {
+                if(pool.length === 0 || !gameActive) { clearInterval(callInterval); return; }
+                let randIdx = Math.floor(Math.random() * pool.length);
+                let num = pool.splice(randIdx, 1)[0];
+                calledNumbers.push(num);
+                document.getElementById('mainBall').innerText = num;
+                document.getElementById('m-' + num).classList.add('called');
+                document.getElementById('call-count').innerText = calledNumbers.length;
+            }, 4000);
+        }
+
+        // 5. WIN DETECTION
+        function checkWinPatterns() {
+            const wins = [
+                [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24], // Rows
+                [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24], // Cols
+                [0,6,12,18,24], [4,8,12,16,20], // Diagonals
+                [0,4,20,24] // Corners
+            ];
+            const isWin = wins.some(pattern => pattern.every(idx => playerMarks.has(idx)));
+            if(isWin) document.getElementById('bingoBtn').classList.add('active');
+        }
+
+        function claimWin() {
+            gameActive = false;
+            const user = "Player_" + Math.floor(Math.random()*999); // In real bot, use Telegram User
+            document.getElementById('winner-text').innerHTML = `<b>${user}</b> has won the game!<br>Winning Card: #${selectedCardId}`;
+            document.getElementById('win-overlay').style.display = 'flex';
+            setTimeout(() => { location.reload(); }, 5000);
+        }
     </script>
 </body>
 </html>
