@@ -6,41 +6,50 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
-        /* LOBBY UI */
+        /* LOBBY */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
         .selection-header-stats { height: 12%; background: white; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 8px; border-bottom: 2px solid #ccc; box-sizing: border-box; }
         .selection-grid-area { height: 63%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; }
         .selection-preview-area { height: 25%; background: white; border-top: 2px solid #ccc; display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
 
-        /* GAME UI */
+        /* GAME SCREEN */
         #game-ui { display: none; padding: 5px; height: 100vh; flex-direction: column; box-sizing: border-box; }
         .game-header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; height: 10%; }
-        .game-body { display: flex; gap: 5px; height: 90%; overflow: hidden; }
         
-        /* SIDEBOARD (1-75) */
-        .side-board-full { width: 32%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; height: 100%; }
+        /* CALL DISPLAY AREA */
+        .call-history-section { background: rgba(255,255,255,0.5); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }
+        .current-call-display { background: var(--joy-purple); color: white; border-radius: 30px; width: 90%; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .call-ball-large { background: var(--joy-orange); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border: 3px solid white; }
+        .last-calls-row { display: flex; gap: 8px; }
+        .last-ball { background: var(--joy-orange); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; border: 2px solid white; }
+
+        .game-body { display: flex; gap: 5px; height: 75%; }
+        .side-board-full { width: 32%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; }
         .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
         .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; border-radius: 2px; }
         .b-grid-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; }
-        .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; height: 25px; border-radius: 1px; }
+        .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; height: 24px; }
         .called { background: var(--joy-orange) !important; color: white; }
 
-        /* PLAYER CARD AREA */
-        .card-side { width: 66%; display: flex; flex-direction: column; align-items: center; }
-        .card-with-header { background: white; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; }
+        /* CARD */
+        .card-side { width: 66%; position: relative; }
+        .card-with-header { background: white; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; position: relative; }
         .card-letters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 5px; }
         .card-letter { text-align: center; font-weight: bold; font-size: 18px; color: var(--joy-purple); }
         .joy-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; }
         .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 16px; background: #f9f9f9; }
-        .hit { background: var(--joy-orange) !important; color: white; border-color: var(--joy-orange); }
+        .hit { background: var(--joy-orange) !important; color: white; }
         .free-spot { background: var(--joy-green); color: white; font-size: 8px; }
 
-        /* BINGO BUTTON */
-        #bingo-btn { width: 100%; margin-top: 15px; padding: 18px; background: #95a5a6; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 24px; transition: 0.3s; }
-        .btn-active { background: var(--joy-green) !important; box-shadow: 0 5px 0 #1e8449; cursor: pointer; transform: translateY(-2px); }
-        .btn-active:active { transform: translateY(2px); box-shadow: none; }
+        #false-x { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 100; pointer-events: none; }
+        .red-x-text { font-size: 150px; color: rgba(231, 76, 60, 0.8); font-weight: bold; }
 
-        /* UTILS */
+        #win-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 5000; }
+        .win-box { background: white; padding: 30px; border-radius: 20px; text-align: center; border: 5px solid var(--joy-orange); }
+
+        #bingo-btn { width: 100%; margin-top: 15px; padding: 18px; background: #95a5a6; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 24px; transition: 0.3s; }
+        .btn-active { background: var(--joy-green) !important; cursor: pointer; box-shadow: 0 5px 0 #1e8449; transform: translateY(-2px); }
+
         .stat-box { background: white; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; border-radius: 4px; }
         .stat-val { font-weight: bold; color: var(--joy-purple); font-size: 16px; }
         .stat-label { font-size: 8px; color: #888; text-transform: uppercase; }
@@ -53,24 +62,37 @@
 <div id="selection-screen">
     <div class="selection-header-stats">
         <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:var(--joy-red);">--</span><span class="stat-label">Time</span></div>
-        <div class="stat-box"><span id="wallet-val" class="stat-val">30</span><span class="stat-label">Wallet</span></div>
+        <div class="stat-box"><span class="stat-val">30</span><span class="stat-label">Wallet</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Stake</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
     </div>
     <div class="selection-grid-area" id="ticketGrid"></div>
     <div class="selection-preview-area" id="preview-box">
-        <span style="color:#999;">PLEASE SELECT A CARD TO ENTER</span>
+        <span style="color:#999;">PICK A CARD TO ENTER</span>
     </div>
 </div>
 
 <div id="game-ui">
     <div class="game-header-stats">
-        <div class="stat-box"><span id="derash-val" class="stat-val">--</span><span class="stat-label">Derash</span></div>
-        <div class="stat-box"><span id="player-val" class="stat-val">--</span><span class="stat-label">Players</span></div>
+        <div class="stat-box"><span class="stat-val">920</span><span class="stat-label">Derash</span></div>
+        <div class="stat-box"><span class="stat-val">115</span><span class="stat-label">Players</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Bet</span></div>
         <div class="stat-box"><span id="call-count" class="stat-val">0</span><span class="stat-label">Call</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
     </div>
+
+    <div class="call-history-section">
+        <div class="current-call-display">
+            <span style="margin-left:15px; font-weight:bold;">Current Call</span>
+            <div id="current-ball-val" class="call-ball-large">--</div>
+        </div>
+        <div class="last-calls-row" id="history-balls">
+            <div class="last-ball" style="opacity:0.3;">--</div>
+            <div class="last-ball" style="opacity:0.3;">--</div>
+            <div class="last-ball" style="opacity:0.3;">--</div>
+        </div>
+    </div>
+
     <div class="game-body">
         <div class="side-board-full">
             <div class="letters-header">
@@ -84,9 +106,19 @@
                     <div class="card-letter">B</div><div class="card-letter">I</div><div class="card-letter">N</div><div class="card-letter">G</div><div class="card-letter">O</div>
                 </div>
                 <div id="userCard" class="joy-card"></div>
+                <div id="false-x"><div class="red-x-text">X</div></div>
             </div>
-            <button id="bingo-btn" disabled onclick="alert('BINGO! CLAIMING WIN...')">BINGO</button>
+            <button id="bingo-btn" disabled onclick="claimBingo()">BINGO</button>
         </div>
+    </div>
+</div>
+
+<div id="win-popup">
+    <div class="win-box">
+        <h1 style="color:var(--joy-orange); margin:0;">CONGRATS!</h1>
+        <p style="font-size:20px;">You Won</p>
+        <div style="font-size:40px; font-weight:bold; color:var(--joy-green);">ETB 920</div>
+        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; background:var(--joy-purple); color:white; border:none; border-radius:8px;">PLAY AGAIN</button>
     </div>
 </div>
 
@@ -94,14 +126,34 @@
     let selectedCardId = null;
     let gameStarted = false;
     let cardNumbers = [];
+    let history = [];
     
-    // 1. REAL CALCULATION: Players and Derash
-    const players = Math.floor(Math.random() * 50) + 115; // Realistic player count
-    const derash = players * 8; // Calculate Derash (Stake 10 - House Cut)
-    document.getElementById('player-val').innerText = players;
-    document.getElementById('derash-val').innerText = derash;
+    // SETUP LOBBY
+    const grid = document.getElementById('ticketGrid');
+    for(let i=1; i<=200; i++){
+        let b = document.createElement('button');
+        b.className = 'card-btn'; b.innerText = i;
+        b.onclick = () => {
+            document.querySelectorAll('.card-btn').forEach(btn => btn.classList.remove('active'));
+            b.classList.add('active');
+            selectedCardId = i;
+        };
+        grid.appendChild(b);
+    }
 
-    // 2. CARD GENERATION (B=1-15, I=16-30, etc.)
+    // SYNCED TIMER
+    setInterval(() => {
+        const timeLeft = 20 - (new Date().getSeconds() % 20);
+        document.getElementById('lobby-timer').innerText = timeLeft;
+        if (timeLeft === 1 && !gameStarted && selectedCardId) {
+            gameStarted = true;
+            document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'flex';
+            renderGameCard();
+        }
+    }, 1000);
+
+    // BINGO COLS
     function getBingoNumbers() {
         let card = [];
         for (let col = 0; col < 5; col++) {
@@ -116,57 +168,6 @@
         return card;
     }
 
-    // 3. SELECTION GRID
-    const grid = document.getElementById('ticketGrid');
-    for(let i=1; i<=200; i++){
-        let b = document.createElement('button');
-        b.className = 'card-btn'; b.innerText = i;
-        b.onclick = () => {
-            document.querySelectorAll('.card-btn').forEach(btn => btn.classList.remove('active'));
-            b.classList.add('active');
-            selectedCardId = i;
-            updatePreview(i);
-        };
-        grid.appendChild(b);
-    }
-
-    function updatePreview(id) {
-        const box = document.getElementById('preview-box');
-        const data = getBingoNumbers();
-        let html = `<div style="text-align:center;"><div style="font-size:10px; font-weight:bold; margin-bottom:2px;">SELECTED: CARD #${id}</div><div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; background:#ddd; padding:2px;">`;
-        for(let r=0; r<5; r++) {
-            for(let c=0; c<5; c++) {
-                let val = (r===2 && c===2) ? 'FREE' : data[c][r];
-                html += `<div style="width:20px; height:20px; background:white; font-size:9px; display:flex; align-items:center; justify-content:center;">${val}</div>`;
-            }
-        }
-        box.innerHTML = html + `</div></div>`;
-    }
-
-    // 4. SYNCED TIMER (Global feel)
-    function syncTimer() {
-        const now = new Date();
-        const timeLeft = 20 - (now.getSeconds() % 20);
-        document.getElementById('lobby-timer').innerText = timeLeft;
-
-        if (timeLeft === 1 && !gameStarted) {
-            if (!selectedCardId) {
-                location.reload(); // Don't enter if no card is picked!
-                return;
-            }
-            gameStarted = true;
-            setTimeout(transitionToGame, 1000);
-        }
-    }
-    setInterval(syncTimer, 1000);
-
-    function transitionToGame() {
-        document.getElementById('selection-screen').style.display = 'none';
-        document.getElementById('game-ui').style.display = 'flex';
-        renderGameCard();
-    }
-
-    // 5. GAME LOGIC & WIN DETECTION
     const mb = document.getElementById('masterBoard');
     for(let r=0; r<15; r++) {
         for(let c=0; c<5; c++) {
@@ -181,20 +182,13 @@
         const data = getBingoNumbers();
         const uc = document.getElementById('userCard');
         uc.innerHTML = '';
-        cardNumbers = []; 
-
         for(let r=0; r<5; r++) {
             for(let c=0; c<5; c++) {
+                let val = data[c][r];
                 let cell = document.createElement('div');
                 cell.className = 'c-cell';
-                let val = data[c][r];
-                if(r===2 && c===2) { 
-                    cell.innerText="FREE"; cell.classList.add('free-spot');
-                    cardNumbers.push({val: 'FREE', hit: true});
-                } else { 
-                    cell.innerText = val; cell.id = 'c'+val; 
-                    cardNumbers.push({val: val, hit: false});
-                }
+                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free-spot'); cardNumbers.push({val:'FREE', hit:true}); }
+                else { cell.innerText = val; cell.id = 'c'+val; cardNumbers.push({val:val, hit:false}); }
                 uc.appendChild(cell);
             }
         }
@@ -204,48 +198,64 @@
     function startCalling() {
         let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
         let idx = 0;
-        let callInterval = setInterval(() => {
+        setInterval(() => {
             if(idx < 75) {
                 let ball = pool[idx];
                 document.getElementById('m'+ball).classList.add('called');
                 document.getElementById('call-count').innerText = idx + 1;
                 
-                // Mark hit on card numbers
+                // Update Current and History Calls
+                document.getElementById('current-ball-val').innerText = ball;
+                history.unshift(ball);
+                updateHistoryUI();
+
                 let cardObj = cardNumbers.find(n => n.val === ball);
                 if(cardObj) {
                     cardObj.hit = true;
                     document.getElementById('c'+ball).classList.add('hit');
-                    checkWin(); // Check every time a number is hit
+                    checkWin();
                 }
                 idx++;
-            } else { clearInterval(callInterval); }
+            }
         }, 3000);
     }
 
+    function updateHistoryUI() {
+        const histDiv = document.getElementById('history-balls');
+        histDiv.innerHTML = '';
+        // Show last 3 calls (from index 1 to 3 of history)
+        for(let i=1; i<=3; i++) {
+            let val = history[i] || '--';
+            let b = document.createElement('div');
+            b.className = 'last-ball';
+            if(val === '--') b.style.opacity = '0.3';
+            b.innerText = val;
+            histDiv.appendChild(b);
+        }
+    }
+
     function checkWin() {
-        // Map 1D array to 5x5 grid
         let grid = [];
         for(let i=0; i<5; i++) grid.push(cardNumbers.slice(i*5, i*5+5));
-
-        let hasWon = false;
-
-        // Check Verticals (The one that failed in your photo!)
-        for(let c=0; c<5; c++) {
-            if(grid[0][c].hit && grid[1][c].hit && grid[2][c].hit && grid[3][c].hit && grid[4][c].hit) hasWon = true;
+        let won = false;
+        for(let i=0; i<5; i++) {
+            if(grid[i].every(n => n.hit)) won = true; // Horizontal
+            if([0,1,2,3,4].every(r => grid[r][i].hit)) won = true; // Vertical
         }
-        // Check Horizontals
-        for(let r=0; r<5; r++) {
-            if(grid[r][0].hit && grid[r][1].hit && grid[r][2].hit && grid[r][3].hit && grid[r][4].hit) hasWon = true;
-        }
-        // Check Diagonals
-        if(grid[0][0].hit && grid[1][1].hit && grid[2][2].hit && grid[3][3].hit && grid[4][4].hit) hasWon = true;
-        if(grid[0][4].hit && grid[1][3].hit && grid[2][2].hit && grid[3][1].hit && grid[4][0].hit) hasWon = true;
+        if(grid[0][0].hit && grid[1][1].hit && grid[2][2].hit && grid[3][3].hit && grid[4][4].hit) won = true;
+        if(grid[0][4].hit && grid[1][3].hit && grid[2][2].hit && grid[3][1].hit && grid[4][0].hit) won = true;
+        if(grid[0][0].hit && grid[0][4].hit && grid[4][0].hit && grid[4][4].hit) won = true;
 
-        if(hasWon) {
+        if(won) {
             let btn = document.getElementById('bingo-btn');
             btn.disabled = false;
             btn.classList.add('btn-active');
         }
+    }
+
+    function claimBingo() {
+        alert("BINGO! CLAIMING WIN...");
+        document.getElementById('win-popup').style.display = 'flex';
     }
 </script>
 </body>
