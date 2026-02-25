@@ -6,55 +6,53 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
-        /* LOBBY */
+        /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
-        .selection-header-stats { height: 12%; background: white; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 8px; border-bottom: 2px solid #ccc; box-sizing: border-box; }
-        .selection-grid-area { height: 63%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; }
-        .selection-preview-area { height: 25%; background: white; border-top: 2px solid #ccc; display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
+        .selection-header-stats { height: 10%; background: white; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 5px; border-bottom: 2px solid #ccc; box-sizing: border-box; }
+        .selection-grid-area { height: 60%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; box-sizing: border-box; }
+        .selection-preview-area { height: 30%; background: white; border-top: 3px solid var(--joy-purple); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; box-sizing: border-box; }
 
         /* GAME SCREEN */
         #game-ui { display: none; padding: 5px; height: 100vh; flex-direction: column; box-sizing: border-box; }
-        .game-header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; height: 10%; }
+        .game-header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; height: 8%; }
         
-        /* CALL DISPLAY AREA */
-        .call-history-section { background: rgba(255,255,255,0.5); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }
-        .current-call-display { background: var(--joy-purple); color: white; border-radius: 30px; width: 90%; padding: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .call-ball-large { background: var(--joy-orange); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border: 3px solid white; }
-        .last-calls-row { display: flex; gap: 8px; }
-        .last-ball { background: var(--joy-orange); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; border: 2px solid white; }
+        .call-history-section { background: rgba(255,255,255,0.7); border-radius: 15px; padding: 8px; margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; border: 1px solid #ddd; }
+        .current-call-display { background: var(--joy-purple); color: white; border-radius: 30px; width: 95%; padding: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .call-ball-large { background: var(--joy-orange); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .last-calls-row { display: flex; gap: 10px; }
+        .last-ball { background: var(--joy-orange); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white; border: 2px solid white; }
 
-        .game-body { display: flex; gap: 5px; height: 75%; }
-        .side-board-full { width: 32%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; }
-        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
-        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; border-radius: 2px; }
-        .b-grid-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; }
-        .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; height: 24px; }
-        .called { background: var(--joy-orange) !important; color: white; }
+        .game-body { display: flex; gap: 5px; height: 70%; }
+        .side-board-full { width: 32%; background: #bdc3c7; border-radius: 6px; padding: 3px; display: flex; flex-direction: column; overflow: hidden; }
+        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 3px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; border-radius: 3px; }
+        .b-grid-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; overflow-y: auto; }
+        .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; height: 26px; border-radius: 2px; }
+        .called { background: var(--joy-orange) !important; color: white; font-weight: bold; }
 
-        /* CARD */
-        .card-side { width: 66%; position: relative; }
-        .card-with-header { background: white; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; position: relative; }
+        /* CARD DISPLAY */
+        .card-side { width: 68%; position: relative; display: flex; flex-direction: column; }
+        .card-with-header { background: white; padding: 10px; border-radius: 12px; border: 2px solid #ccc; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-letters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 5px; }
-        .card-letter { text-align: center; font-weight: bold; font-size: 18px; color: var(--joy-purple); }
-        .joy-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; }
-        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 16px; background: #f9f9f9; }
-        .hit { background: var(--joy-orange) !important; color: white; }
-        .free-spot { background: var(--joy-green); color: white; font-size: 8px; }
+        .card-letter { text-align: center; font-weight: bold; font-size: 20px; color: var(--joy-purple); }
+        .joy-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 18px; background: #fdfdfd; }
+        .hit { background: var(--joy-orange) !important; color: white; border-color: var(--joy-orange); transform: scale(1.05); transition: 0.2s; }
+        .free-spot { background: var(--joy-green); color: white; font-size: 9px; }
 
-        #false-x { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 100; pointer-events: none; }
-        .red-x-text { font-size: 150px; color: rgba(231, 76, 60, 0.8); font-weight: bold; }
+        #bingo-btn { width: 100%; margin-top: 12px; padding: 15px; background: #bdc3c7; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 24px; transition: 0.3s; }
+        .btn-active { background: var(--joy-green) !important; cursor: pointer; box-shadow: 0 5px 0 #1e8449; }
+        .btn-active:active { transform: translateY(3px); box-shadow: none; }
 
-        #win-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 5000; }
-        .win-box { background: white; padding: 30px; border-radius: 20px; text-align: center; border: 5px solid var(--joy-orange); }
+        /* WIN POPUP */
+        #win-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 5000; }
+        .win-box { background: white; padding: 40px; border-radius: 25px; text-align: center; border: 6px solid var(--joy-orange); box-shadow: 0 0 30px var(--joy-orange); }
 
-        #bingo-btn { width: 100%; margin-top: 15px; padding: 18px; background: #95a5a6; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 24px; transition: 0.3s; }
-        .btn-active { background: var(--joy-green) !important; cursor: pointer; box-shadow: 0 5px 0 #1e8449; transform: translateY(-2px); }
-
-        .stat-box { background: white; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; border-radius: 4px; }
+        .stat-box { background: white; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; border-radius: 5px; }
         .stat-val { font-weight: bold; color: var(--joy-purple); font-size: 16px; }
-        .stat-label { font-size: 8px; color: #888; text-transform: uppercase; }
-        .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 6px; font-weight: bold; }
-        .card-btn.active { background: var(--joy-green); border: 2px solid white; }
+        .stat-label { font-size: 9px; color: #777; text-transform: uppercase; }
+        .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 3px 0 #d35400; }
+        .card-btn.active { background: var(--joy-green); box-shadow: 0 3px 0 #1e8449; border: 2px solid white; transform: translateY(2px); }
     </style>
 </head>
 <body>
@@ -68,7 +66,7 @@
     </div>
     <div class="selection-grid-area" id="ticketGrid"></div>
     <div class="selection-preview-area" id="preview-box">
-        <span style="color:#999;">PICK A CARD TO ENTER</span>
+        <span style="color:#777; font-weight:bold;">TAP A NUMBER TO PREVIEW CARD</span>
     </div>
 </div>
 
@@ -83,13 +81,13 @@
 
     <div class="call-history-section">
         <div class="current-call-display">
-            <span style="margin-left:15px; font-weight:bold;">Current Call</span>
+            <span style="margin-left:15px; font-weight:bold; letter-spacing:1px;">Current Call</span>
             <div id="current-ball-val" class="call-ball-large">--</div>
         </div>
         <div class="last-calls-row" id="history-balls">
-            <div class="last-ball" style="opacity:0.3;">--</div>
-            <div class="last-ball" style="opacity:0.3;">--</div>
-            <div class="last-ball" style="opacity:0.3;">--</div>
+            <div class="last-ball" style="opacity:0.2;">--</div>
+            <div class="last-ball" style="opacity:0.2;">--</div>
+            <div class="last-ball" style="opacity:0.2;">--</div>
         </div>
     </div>
 
@@ -106,19 +104,18 @@
                     <div class="card-letter">B</div><div class="card-letter">I</div><div class="card-letter">N</div><div class="card-letter">G</div><div class="card-letter">O</div>
                 </div>
                 <div id="userCard" class="joy-card"></div>
-                <div id="false-x"><div class="red-x-text">X</div></div>
             </div>
-            <button id="bingo-btn" disabled onclick="claimBingo()">BINGO</button>
+            <button id="bingo-btn" disabled onclick="showInstantWin()">BINGO</button>
         </div>
     </div>
 </div>
 
 <div id="win-popup">
     <div class="win-box">
-        <h1 style="color:var(--joy-orange); margin:0;">CONGRATS!</h1>
-        <p style="font-size:20px;">You Won</p>
-        <div style="font-size:40px; font-weight:bold; color:var(--joy-green);">ETB 920</div>
-        <button onclick="location.reload()" style="margin-top:20px; padding:10px 20px; background:var(--joy-purple); color:white; border:none; border-radius:8px;">PLAY AGAIN</button>
+        <h1 style="color:var(--joy-orange); margin:0; font-size:35px;">CONGRATS!</h1>
+        <p style="font-size:22px; margin:10px 0;">You won</p>
+        <div style="font-size:45px; font-weight:bold; color:var(--joy-green); margin-bottom:20px;">920 ETB</div>
+        <button onclick="location.reload()" style="padding:15px 30px; background:var(--joy-purple); color:white; border:none; border-radius:12px; font-weight:bold; font-size:18px; cursor:pointer;">PLAY AGAIN</button>
     </div>
 </div>
 
@@ -126,19 +123,33 @@
     let selectedCardId = null;
     let gameStarted = false;
     let cardNumbers = [];
-    let history = [];
+    let callHistory = [];
     
-    // SETUP LOBBY
+    // GENERATE PREVIEW GRID
     const grid = document.getElementById('ticketGrid');
-    for(let i=1; i<=200; i++){
+    for(let i=1; i<=80; i++){
         let b = document.createElement('button');
         b.className = 'card-btn'; b.innerText = i;
         b.onclick = () => {
             document.querySelectorAll('.card-btn').forEach(btn => btn.classList.remove('active'));
             b.classList.add('active');
             selectedCardId = i;
+            showCardPreview(i);
         };
         grid.appendChild(b);
+    }
+
+    function showCardPreview(id) {
+        const box = document.getElementById('preview-box');
+        const data = generateBingoNumbers();
+        let html = `<div style="text-align:center;"><div style="font-weight:bold; color:var(--joy-purple); margin-bottom:5px;">PREVIEW: CARD #${id}</div><div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:2px; background:#ccc; padding:4px; border-radius:5px;">`;
+        for(let r=0; r<5; r++) {
+            for(let c=0; c<5; c++) {
+                let val = (r===2 && c===2) ? 'FREE' : data[c][r];
+                html += `<div style="width:25px; height:25px; background:white; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:bold;">${val}</div>`;
+            }
+        }
+        box.innerHTML = html + `</div></div>`;
     }
 
     // SYNCED TIMER
@@ -153,8 +164,7 @@
         }
     }, 1000);
 
-    // BINGO COLS
-    function getBingoNumbers() {
+    function generateBingoNumbers() {
         let card = [];
         for (let col = 0; col < 5; col++) {
             let min = (col * 15) + 1;
@@ -168,6 +178,7 @@
         return card;
     }
 
+    // MASTER BOARD (1-75)
     const mb = document.getElementById('masterBoard');
     for(let r=0; r<15; r++) {
         for(let c=0; c<5; c++) {
@@ -179,9 +190,10 @@
     }
 
     function renderGameCard() {
-        const data = getBingoNumbers();
+        const data = generateBingoNumbers();
         const uc = document.getElementById('userCard');
         uc.innerHTML = '';
+        cardNumbers = [];
         for(let r=0; r<5; r++) {
             for(let c=0; c<5; c++) {
                 let val = data[c][r];
@@ -192,10 +204,10 @@
                 uc.appendChild(cell);
             }
         }
-        startCalling();
+        startGameFlow();
     }
 
-    function startCalling() {
+    function startGameFlow() {
         let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
         let idx = 0;
         setInterval(() => {
@@ -204,16 +216,16 @@
                 document.getElementById('m'+ball).classList.add('called');
                 document.getElementById('call-count').innerText = idx + 1;
                 
-                // Update Current and History Calls
+                // Update History & Current
                 document.getElementById('current-ball-val').innerText = ball;
-                history.unshift(ball);
+                callHistory.unshift(ball);
                 updateHistoryUI();
 
                 let cardObj = cardNumbers.find(n => n.val === ball);
                 if(cardObj) {
                     cardObj.hit = true;
                     document.getElementById('c'+ball).classList.add('hit');
-                    checkWin();
+                    checkBingoPattern();
                 }
                 idx++;
             }
@@ -223,27 +235,29 @@
     function updateHistoryUI() {
         const histDiv = document.getElementById('history-balls');
         histDiv.innerHTML = '';
-        // Show last 3 calls (from index 1 to 3 of history)
         for(let i=1; i<=3; i++) {
-            let val = history[i] || '--';
+            let val = callHistory[i] || '--';
             let b = document.createElement('div');
             b.className = 'last-ball';
-            if(val === '--') b.style.opacity = '0.3';
+            if(val === '--') b.style.opacity = '0.2';
             b.innerText = val;
             histDiv.appendChild(b);
         }
     }
 
-    function checkWin() {
+    function checkBingoPattern() {
         let grid = [];
         for(let i=0; i<5; i++) grid.push(cardNumbers.slice(i*5, i*5+5));
         let won = false;
+        // Rows & Cols
         for(let i=0; i<5; i++) {
-            if(grid[i].every(n => n.hit)) won = true; // Horizontal
-            if([0,1,2,3,4].every(r => grid[r][i].hit)) won = true; // Vertical
+            if(grid[i].every(n => n.hit)) won = true;
+            if([0,1,2,3,4].every(r => grid[r][i].hit)) won = true;
         }
+        // Diagonals
         if(grid[0][0].hit && grid[1][1].hit && grid[2][2].hit && grid[3][3].hit && grid[4][4].hit) won = true;
         if(grid[0][4].hit && grid[1][3].hit && grid[2][2].hit && grid[3][1].hit && grid[4][0].hit) won = true;
+        // 4 Corners
         if(grid[0][0].hit && grid[0][4].hit && grid[4][0].hit && grid[4][4].hit) won = true;
 
         if(won) {
@@ -253,8 +267,7 @@
         }
     }
 
-    function claimBingo() {
-        alert("BINGO! CLAIMING WIN...");
+    function showInstantWin() {
         document.getElementById('win-popup').style.display = 'flex';
     }
 </script>
