@@ -16,7 +16,7 @@
         /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
         .sel-grid { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; transition: 0.2s; }
+        .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; }
         .card-opt.active { background: var(--joy-orange); color: white; border-color: white; transform: scale(1.05); }
 
         .preview-box { height: 170px; background: white; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
@@ -50,7 +50,7 @@
         .p-cell.past { background: #fff176; }
 
         .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 22px; width: 100%; pointer-events: none; }
-        .bingo-btn.on { background: var(--joy-green); pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .bingo-btn.on { background: var(--joy-green); pointer-events: auto; }
 
         #win-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
         @keyframes blinker { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
@@ -60,7 +60,7 @@
 <body>
 
     <div id="selection-screen">
-        <div style="background:var(--joy-red); color:white; padding:12px; text-align:center; font-weight:bold;">NEXT GAME IN: <span id="timer">20</span>s</div>
+        <div id="status-bar" style="background:var(--joy-red); color:white; padding:12px; text-align:center; font-weight:bold;">NEXT GAME IN: <span id="timer">--</span>s</div>
         <div class="sel-grid" id="cardGrid"></div>
         <div class="preview-box">
              <div class="mini-grid" id="miniGrid" style="visibility:hidden;"></div>
@@ -108,9 +108,9 @@
     </div>
 
     <script>
-        let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null, timeLeft=20;
+        let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
 
-        // FIXED CARD GENERATOR (Math.seed based for #39 consistency)
+        // SEEDED CARD GENERATOR (Card #39 will always be the same)
         function generateFixedCard(seed) {
             let card = [];
             const pseudoRandom = (s) => {
@@ -119,7 +119,6 @@
             };
             for(let i=0; i<5; i++) {
                 let col = Array.from({length:15}, (_,n) => (i*15)+n+1);
-                // Sort with seeded random
                 col.sort((a,b) => pseudoRandom(seed + a + i) - 0.5);
                 card[i] = col.slice(0,5);
             }
@@ -127,6 +126,28 @@
             for(let r=0; r<5; r++) for(let c=0; c<5; c++) flat.push((r===2 && c===2) ? 'F' : card[c][r]);
             return flat;
         }
+
+        // SYNCED TIMER LOGIC
+        function updateSync() {
+            const now = new Date();
+            const seconds = now.getSeconds(); 
+            const timerDisplay = document.getElementById('timer');
+            const statusBar = document.getElementById('status-bar');
+
+            if (seconds < 20) {
+                // SELECTION PHASE (First 20 seconds of every minute)
+                if (gameActive) location.reload(); // Reset if game was running
+                timerDisplay.textContent = 20 - seconds;
+                statusBar.style.background = "var(--joy-red)";
+                statusBar.innerHTML = `NEXT GAME IN: <span id="timer">${20 - seconds}</span>s`;
+            } else {
+                // GAME PHASE (Remaining 40 seconds)
+                if (!gameActive) {
+                    startGame();
+                }
+            }
+        }
+        setInterval(updateSync, 1000);
 
         // LOBBY SETUP
         const grid = document.getElementById('cardGrid');
@@ -145,52 +166,64 @@
             grid.appendChild(d);
         }
 
-        // COUNTDOWN
-        const cd = setInterval(()=>{
-            timeLeft--; document.getElementById('timer').textContent = timeLeft;
-            if(timeLeft<=0){ clearInterval(cd); startGame(); }
-        }, 1000);
-
         function startGame() {
             gameActive = true;
             document.getElementById('selection-screen').style.display = 'none';
             const zone = document.getElementById('playerArea');
+            
+            zone.innerHTML = `
+                <div class="letter-row">
+                    <div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div>
+                </div>
+                <div class="grid-main" id="pGrid"></div>
+                <p style="margin:4px; font-size:12px; font-weight:bold;">Card #${selectedCardId || 'Auto'}</p>
+                <button class="bingo-btn" id="bingoBtn" onclick="winGame(true)">BINGO</button>`;
+
             if(!selectedCardId) {
-                zone.innerHTML = `<div style="padding:40px; text-align:center; color:var(--joy-purple); font-weight:bold;">Wait for next round...</div>`;
-            } else {
-                zone.innerHTML = `
-                    <div class="letter-row">
-                        <div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div>
-                    </div>
-                    <div class="grid-main" id="pGrid"></div>
-                    <p style="margin:4px; font-size:12px; font-weight:bold;">Card #${selectedCardId}</p>
-                    <button class="bingo-btn" id="bingoBtn" onclick="winGame(true)">BINGO</button>`;
-                selectedCardData.forEach((n,idx)=>{
-                    const c = document.createElement('div'); c.className = n==='F'?'p-cell hit':'p-cell'; c.textContent=n;
-                    if(n==='F') marked.add(idx);
-                    c.onclick = () => { if(called.includes(n)){ c.classList.add('hit'); marked.add(idx); checkLogic(); }};
-                    document.getElementById('pGrid').appendChild(c);
-                });
+                selectedCardId = 1; // Default if none chosen
+                selectedCardData = generateFixedCard(1);
             }
+
+            selectedCardData.forEach((n,idx)=>{
+                const c = document.createElement('div'); c.className = n==='F'?'p-cell hit':'p-cell'; c.textContent=n;
+                if(n==='F') marked.add(idx);
+                c.onclick = () => { if(called.includes(n)){ c.classList.add('hit'); marked.add(idx); checkLogic(); }};
+                document.getElementById('pGrid').appendChild(c);
+            });
+            
             initMaster(); runLoop();
         }
 
         function initMaster() {
-            const g = document.getElementById('masterGrid');
+            const g = document.getElementById('masterGrid'); g.innerHTML = '';
             for(let i=1; i<=15; i++) for(let c=0; c<5; c++){
                 const n = i+(c*15); const d = document.createElement('div'); d.className='m-cell'; d.id='m-'+n; d.textContent=n; g.appendChild(d);
             }
         }
 
         function runLoop() {
-            let pool = Array.from({length:75},(_,i)=>i+1).sort(()=>Math.random()-0.5);
+            // Seed the pool so everyone gets the same numbers in the same minute
+            let minuteSeed = new Date().getMinutes();
+            let pool = Array.from({length:75},(_,i)=>i+1);
+            
+            // Deterministic shuffle
+            const seededShuffle = (arr, seed) => {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor((Math.sin(seed + i) * 10000 % 1 + 1) / 2 * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            };
+            seededShuffle(pool, minuteSeed);
+
             const loop = setInterval(() => {
                 if(!gameActive) { clearInterval(loop); return; }
+                if(pool.length === 0) return;
+                
                 ballNow = pool.pop(); called.push(ballNow);
                 document.getElementById('currBall').textContent = ballNow;
-                document.getElementById('m-'+ballNow).classList.add('on');
+                if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
-                // Last 3 Update
+                
                 const hist = document.getElementById('last3Row');
                 const last3 = called.slice(-4, -1).reverse();
                 hist.innerHTML = '';
@@ -198,9 +231,8 @@
                     const b = document.createElement('div'); b.className='small-ball'; b.textContent = last3[i] || '--';
                     hist.appendChild(b);
                 }
-                // Randomly trigger an "Opponent Win" if player doesn't win in 60 calls
-                if(called.length > 60 && Math.random() < 0.05) winGame(false);
-            }, 4000);
+                checkLogic();
+            }, 3000); // Calls every 3 seconds
         }
 
         function checkLogic() {
@@ -214,22 +246,17 @@
 
         function winGame(isPlayer) {
             gameActive = false;
-            document.getElementById('winner-text').textContent = isPlayer ? "YOU HAVE WON!" : "PLAYER_204 HAS WON!";
-            document.getElementById('win-board-num').textContent = isPlayer ? selectedCardId : Math.floor(Math.random()*200);
+            document.getElementById('winner-text').textContent = "YOU HAVE WON!";
+            document.getElementById('win-board-num').textContent = selectedCardId;
             const wv = document.getElementById('win-view'); wv.innerHTML = '';
-            
-            // If opponent won, show a random card for them
-            let displayData = isPlayer ? selectedCardData : generateFixedCard(99);
-            displayData.forEach((n,i) => {
+            selectedCardData.forEach((n,i) => {
                 const c = document.createElement('div'); c.className = 'p-cell'; c.textContent = n;
-                if(called.includes(n) || n==='F') {
-                    c.classList.add('hit');
-                    if(n === ballNow && isPlayer) c.classList.add('win-blink');
-                }
+                if(called.includes(n) || n==='F') c.classList.add('hit');
+                if(n === ballNow) c.classList.add('win-blink');
                 wv.appendChild(c);
             });
             document.getElementById('win-modal').style.display = 'flex';
-            setTimeout(() => { location.reload(); }, 10000);
+            // Wait for next minute cycle to restart selection
         }
     </script>
 </body>
