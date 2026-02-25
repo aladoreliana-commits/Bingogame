@@ -3,67 +3,74 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
+        :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; --b-col: #f1c40f; --i-col: #27ae60; --n-col: #2980b9; --g-col: #c0392b; --o-col: #8e44ad; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        /* TOP STATS */
+        /* HEADER COLORS */
+        .col-b { background: var(--b-col) !important; color: white; }
+        .col-i { background: var(--i-col) !important; color: white; }
+        .col-n { background: var(--n-col) !important; color: white; }
+        .col-g { background: var(--g-col) !important; color: white; }
+        .col-o { background: var(--o-col) !important; color: white; }
+
         .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 6px; text-align: center; font-size: 10px; border-bottom: 1px solid #eee; }
         .stat-val { font-weight: bold; color: var(--joy-purple); display: block; font-size: 13px; }
 
-        /* REFINED CALL HISTORY (Slightly Bigger) */
-        .call-history-section { background: white; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; border-bottom: 2px solid #ddd; }
-        .current-call-row { background: var(--joy-purple); color: white; border-radius: 50px; width: 95%; height: 55px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; }
-        .current-call-label { font-size: 18px; font-weight: bold; }
-        .big-ball { background: var(--joy-orange); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; font-size: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* CALL HISTORY */
+        .call-history-section { background: white; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 8px; border-bottom: 2px solid #ddd; }
+        .current-call-row { background: var(--joy-purple); color: white; border-radius: 50px; width: 95%; height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; }
+        .big-ball { background: var(--joy-orange); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; font-size: 18px; }
         .prev-balls { display: flex; gap: 10px; }
-        .small-ball { background: #ffd085; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #7a4a00; font-weight: bold; border: 1px solid #f39c12; }
+        .small-ball { background: #ffd085; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #7a4a00; font-weight: bold; }
 
-        /* MAIN GAME AREA */
+        /* GAME BODY */
         .game-body { display: flex; flex: 1; padding: 8px; gap: 8px; box-sizing: border-box; overflow: hidden; }
-        .master-board { width: 42%; background: #bdc3c7; border-radius: 8px; padding: 3px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; height: 100%; }
+        .master-board-container, .player-area { display: flex; flex-direction: column; }
+        .master-board-container { width: 42%; }
+        .player-area { width: 58%; align-items: center; gap: 5px; }
+
+        .letter-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; margin-bottom: 2px; }
+        .letter-box { aspect-ratio: 1.2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border-radius: 4px 4px 0 0; }
+
+        .grid-base { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 4px; border-radius: 0 0 8px 8px; width: 100%; box-sizing: border-box; }
+        .master-grid { flex: 1; grid-template-rows: repeat(15, 1fr); background: #bdc3c7; }
         .num-cell { background: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
         .num-cell.active { background: var(--joy-orange); color: white; }
 
-        /* PLAYER AREA (Button closer to card) */
-        .player-area { width: 58%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 5px; border-radius: 8px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .card-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; border-radius: 4px; }
         .card-cell.marked { background: var(--joy-green); color: white; }
         .card-cell.called { background: #fff176; }
 
-        /* SELECTION SCREEN REFINEMENT */
+        /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
-        .preview-container { height: 28%; background: white; padding: 10px; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #previewGrid { width: 75%; max-height: 100%; }
+        .preview-container { height: 25%; background: white; padding: 10px; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #previewGrid { width: 60%; height: 90%; } /* Smaller Preview */
 
-        /* BUTTONS */
-        .bingo-btn { height: 55px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 22px; pointer-events: none; width: 100%; transition: transform 0.1s; }
-        .bingo-btn.active { background: var(--joy-green); pointer-events: auto; box-shadow: 0 5px 15px rgba(39,174,96,0.4); cursor: pointer; }
-        .bingo-btn.active:active { transform: scale(0.96); }
+        .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 20px; pointer-events: none; width: 100%; margin-top: 5px; }
+        .bingo-btn.active { background: var(--joy-green); pointer-events: auto; }
 
-        /* WIN MODAL BLINK */
-        @keyframes winPulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes winPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .winning-number-blink { animation: winPulse 0.4s infinite; background: white !important; color: var(--joy-green) !important; }
     </style>
 </head>
 <body>
 
     <div id="selection-screen">
-        <div style="background:var(--joy-red); color:white; padding:12px; text-align:center; font-weight:bold; font-size:16px;">NEXT GAME IN: <span id="countdown">20</span>s</div>
+        <div style="background:var(--joy-red); color:white; padding:12px; text-align:center; font-weight:bold;">NEXT GAME IN: <span id="countdown">20</span>s</div>
         <div id="selectionGrid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:12px; overflow-y:auto; flex:1;"></div>
         <div class="preview-container">
-             <div class="card-grid" id="previewGrid" style="display:none;"></div>
-             <p id="previewLabel" style="font-size:12px; margin-top:5px; color:#555; display:none;">Previewing Card</p>
+             <div class="grid-base" id="previewGrid" style="display:none;"></div>
+             <p id="previewLabel" style="font-size:11px; margin-top:4px; color:#666; display:none;">Previewing Card</p>
         </div>
     </div>
 
     <div id="win-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:3000; display:none; align-items:center; justify-content:center; padding:20px;">
-        <div style="background:white; border-radius:15px; width:100%; max-width:340px; text-align:center; overflow:hidden;">
-            <div style="background:var(--joy-orange); color:white; padding:15px; font-size:24px; font-weight:bold;">BINGO!</div>
-            <div style="padding:20px;">
-                <p id="win-msg" style="font-weight:bold; margin-bottom:15px; font-size:18px;"></p>
-                <div class="card-grid" id="win-card-view"></div>
-                <p style="font-size:11px; color:#777; margin-top:15px;">Board number <span id="win-id"></span></p>
+        <div style="background:white; border-radius:15px; width:100%; max-width:320px; text-align:center; overflow:hidden;">
+            <div style="background:var(--joy-orange); color:white; padding:15px; font-size:22px; font-weight:bold;">BINGO!</div>
+            <div style="padding:15px;">
+                <p id="win-msg" style="font-weight:bold; margin-bottom:10px;"></p>
+                <div class="grid-base" id="win-card-view"></div>
+                <p style="font-size:11px; color:#777; margin-top:10px;">Board number <span id="win-id"></span></p>
             </div>
         </div>
     </div>
@@ -78,7 +85,7 @@
 
     <div class="call-history-section">
         <div class="current-call-row">
-            <span class="current-call-label">Current Call</span>
+            <span style="font-weight:bold; font-size:18px;">Current Call</span>
             <div class="big-ball" id="currentBall">--</div>
         </div>
         <div class="prev-balls" id="historyBalls">
@@ -87,24 +94,34 @@
     </div>
 
     <div class="game-body">
-        <div class="master-board" id="masterGrid"></div>
+        <div class="master-board-container">
+            <div class="letter-header">
+                <div class="letter-box col-b">B</div><div class="letter-box col-i">I</div><div class="letter-box col-n">N</div><div class="letter-box col-g">G</div><div class="letter-box col-o">O</div>
+            </div>
+            <div class="grid-base master-grid" id="masterGrid"></div>
+        </div>
         <div class="player-area" id="playerZone"></div>
     </div>
 
     <script>
-        let selectedCardId=null, selectedCardData=null, timeLeft=20, called=[], marked=new Set(), gameActive=false, ballNow=null;
+        let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
 
-        // SYNCED TIMER LOGIC
-        const timer = setInterval(()=>{
-            timeLeft--; 
-            document.getElementById('countdown').textContent = timeLeft;
-            if(timeLeft <= 0){ 
-                clearInterval(timer); 
-                start(); 
+        // FIXED SYNCED COUNTDOWN (Mocking a server start time)
+        function updateGlobalTimer() {
+            const now = Math.floor(Date.now() / 1000);
+            const cycle = 30; // 20s selection + game time simulation
+            const remaining = 20 - (now % cycle);
+            
+            if (remaining > 0) {
+                document.getElementById('countdown').textContent = remaining + "s";
+                document.getElementById('selection-screen').style.display = 'flex';
+            } else if (remaining <= 0 && !gameActive) {
+                start();
             }
-        }, 1000);
+        }
+        const timerInterval = setInterval(updateGlobalTimer, 1000);
 
-        // SELECTION LOGIC
+        // SELECTION
         const selGrid = document.getElementById('selectionGrid');
         for(let i=1; i<=200; i++) {
             const d = document.createElement('div');
@@ -134,12 +151,19 @@
         }
 
         function start() {
+            gameActive = true;
             document.getElementById('selection-screen').style.display = 'none';
             const zone = document.getElementById('playerZone');
             if(!selectedCardId) {
-                zone.innerHTML = `<div style="padding:40px; text-align:center; color:var(--joy-purple); font-weight:bold;">Wait for next game...</div>`;
+                zone.innerHTML = `<div style="padding:20px; text-align:center; color:var(--joy-purple); font-weight:bold;">Wait for next game...</div>`;
             } else {
-                zone.innerHTML = `<div class="card-grid" id="gameGrid"></div><p style="margin:2px; font-size:12px; font-weight:bold;">Card #${selectedCardId}</p><button class="bingo-btn" id="bBtn" onclick="triggerBingo()">BINGO</button>`;
+                zone.innerHTML = `
+                    <div class="letter-header">
+                        <div class="letter-box col-b">B</div><div class="letter-box col-i">I</div><div class="letter-box col-n">N</div><div class="letter-box col-g">G</div><div class="letter-box col-o">O</div>
+                    </div>
+                    <div class="grid-base" id="gameGrid"></div>
+                    <p style="margin:2px; font-size:11px; font-weight:bold;">Card #${selectedCardId}</p>
+                    <button class="bingo-btn" id="bBtn" onclick="triggerBingo()">BINGO</button>`;
                 selectedCardData.forEach((n,idx) => {
                     const c = document.createElement('div'); c.className = n==='F'?'card-cell marked':'card-cell'; c.textContent = n;
                     if(n==='F') marked.add(idx);
@@ -151,14 +175,14 @@
         }
 
         function initMaster() {
-            const g = document.getElementById('masterGrid');
+            const g = document.getElementById('masterGrid'); g.innerHTML = '';
             for(let i=1; i<=15; i++) for(let c=0; c<5; c++){
                 const n = i+(c*15); const d = document.createElement('div'); d.className = 'num-cell'; d.id = 'm-'+n; d.textContent = n; g.appendChild(d);
             }
         }
 
         function runGame() {
-            gameActive = true; let pool = Array.from({length:75},(_,i)=>i+1).sort(()=>Math.random()-0.5);
+            let pool = Array.from({length:75},(_,i)=>i+1).sort(()=>Math.random()-0.5);
             const loop = setInterval(() => {
                 if(!gameActive || pool.length === 0){ clearInterval(loop); return; }
                 ballNow = pool.pop(); called.push(ballNow);
@@ -173,7 +197,7 @@
                     hist.appendChild(b);
                 }
                 checkWin();
-            }, 5000);
+            }, 4000);
         }
 
         function checkWin() {
@@ -197,12 +221,11 @@
                 if(window.lastWinPattern.includes(i)) {
                     c.classList.add('marked');
                     if(n === ballNow) c.classList.add('winning-number-blink');
-                }
-                else if(called.includes(n) || n==='F') c.classList.add('called');
+                } else if(called.includes(n) || n==='F') c.classList.add('called');
                 wc.appendChild(c);
             });
             modal.style.display = 'flex';
-            setTimeout(() => { location.reload(); }, 8000);
+            setTimeout(() => { location.reload(); }, 10000); // 10s wait before restart
         }
     </script>
 </body>
