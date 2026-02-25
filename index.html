@@ -6,44 +6,55 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 5px; overflow: hidden; }
         
-        /* Stats Header */
+        /* 200 CARD SELECTION OVERLAY */
+        #selection-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--joy-bg); z-index: 1000; display: flex; flex-direction: column; }
+        .selection-header { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; background: white; padding: 10px; border-bottom: 2px solid #ccc; margin-bottom: 5px; }
+        .sel-box { text-align: center; font-size: 11px; font-weight: bold; color: var(--joy-purple); }
+        .sel-val { display: block; color: #333; font-size: 14px; }
+        .grid-200 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; padding: 10px; overflow-y: auto; flex-grow: 1; }
+        .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 11px; box-shadow: 0 2px 0 #d35400; }
+        .card-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* MAIN GAME UI */
         .header-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; }
         .stat-box { background: white; border-radius: 4px; text-align: center; padding: 2px; font-size: 10px; border: 1px solid #ccc; }
         .stat-val { font-weight: bold; color: var(--joy-purple); display: block; }
-
         .game-area { display: flex; gap: 5px; }
-        
-        /* BINGO Board Left with B-I-N-G-O Headers */
         .side-board { width: 35%; background: #bdc3c7; border-radius: 4px; padding: 2px; }
         .letters-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
         .letter { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 2px; font-size: 12px; }
         .l-b { background: #f1c40f; } .l-i { background: #27ae60; } .l-n { background: #2980b9; } .l-g { background: #c0392b; } .l-o { background: #8e44ad; }
-        
         .b-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
         .b-cell { aspect-ratio: 1; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; border-radius: 2px; }
         .called { background: var(--joy-orange) !important; color: white; border: none; }
-
-        /* Card Right */
         .main-card-area { width: 63%; }
         .call-banner { background: var(--joy-purple); color: white; border-radius: 25px; padding: 10px; margin-bottom: 5px; text-align: center; position: relative; font-weight: bold; height: 40px; line-height: 20px; }
         .ball-circle { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: var(--joy-orange); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
-
         .player-card { background: white; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 6px; border-radius: 8px; border: 2px solid #ddd; }
         .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 14px; }
         .hit { background: var(--joy-orange); color: white; border: none; transform: scale(0.9); }
         .free { background: #27ae60; color: white; font-size: 8px; border: none; }
-
         #bingoBtn { width: 100%; margin-top: 10px; padding: 12px; background: #ccc; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 18px; }
         .btn-active { background: linear-gradient(to bottom, #ff4d4d, #b30000) !important; box-shadow: 0 4px 0 #800000; cursor: pointer; }
     </style>
 </head>
 <body>
 
+<div id="selection-screen">
+    <div class="selection-header">
+        <div class="sel-box"><span id="sel-time" style="color:red; font-size:20px;">20</span>Time</div>
+        <div class="sel-box"><span class="sel-val">30</span>Wallet</div>
+        <div class="sel-box"><span class="sel-val">10</span>Stake</div>
+        <div class="sel-box"><span class="sel-val">1 of 1</span>Game №</div>
+    </div>
+    <div class="grid-200" id="ticketGrid"></div>
+</div>
+
 <div class="header-grid">
     <div class="stat-box"><span class="stat-val" id="derash">8</span>Derash</div>
     <div class="stat-box"><span class="stat-val" id="pCount">1</span>Players</div>
     <div class="stat-box"><span class="stat-val">10</span>Bet</div>
-    <div class="stat-box"><span class="stat-val" id="timer">20s</span>Time</div>
+    <div class="stat-box"><span class="stat-val" id="game-timer">--</span>Time</div>
     <div class="stat-box"><span class="stat-val">1 of 1</span>Game</div>
 </div>
 
@@ -62,13 +73,67 @@
 </div>
 
 <script>
-    let calledSet = new Set();
-    const masterBoard = document.getElementById('masterBoard');
-    const userCard = document.getElementById('userCard');
-    const currentBall = document.getElementById('currentBall');
-    const bingoBtn = document.getElementById('bingoBtn');
+    let playersJoining = Math.floor(Math.random() * 140) + 1; // Real player simulation
+    document.getElementById('pCount').innerText = playersJoining;
+    document.getElementById('derash').innerText = playersJoining * 8;
 
-    // 1. Generate Left Board (1-75) Vertically correctly
+    const ticketGrid = document.getElementById('ticketGrid');
+    const selScreen = document.getElementById('selection-screen');
+    const selTimer = document.getElementById('sel-time');
+    let timeLeft = 20;
+
+    // 1. Create 200 Card Buttons
+    for(let i=1; i<=200; i++){
+        let b = document.createElement('button');
+        b.className = 'card-btn';
+        b.innerText = i;
+        b.onclick = () => selectCard(i);
+        ticketGrid.appendChild(b);
+    }
+
+    // 2. Countdown logic for selection
+    let timerInt = setInterval(() => {
+        timeLeft--;
+        selTimer.innerText = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(timerInt);
+            selectCard(Math.floor(Math.random() * 200) + 1); // Auto pick if time runs out
+        }
+    }, 1000);
+
+    function selectCard(num) {
+        clearInterval(timerInt);
+        selScreen.style.display = 'none';
+        generateJoyCard(num);
+        startGame();
+    }
+
+    // 3. Game Logic (Fixed Columns B-I-N-G-O)
+    function generateJoyCard(seed) {
+        userCard.innerHTML = '';
+        let cardData = [];
+        for(let c=0; c<5; c++){
+            let min = (c*15)+1;
+            let col = [];
+            while(col.length < 5){
+                let r = Math.floor(Math.random() * 15) + min;
+                if(!col.includes(r)) col.push(r);
+            }
+            cardData[c] = col;
+        }
+        for(let r=0; r<5; r++){
+            for(let c=0; c<5; c++){
+                let cell = document.createElement('div');
+                cell.className = 'c-cell';
+                let val = cardData[c][r];
+                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free'); cell.id="free"; }
+                else { cell.innerText=val; cell.id="c"+val; }
+                userCard.appendChild(cell);
+            }
+        }
+    }
+
+    // Master Board Setup
     for(let r=0; r<15; r++){
         for(let c=0; c<5; c++){
             let n = (c*15)+r+1;
@@ -78,68 +143,21 @@
         }
     }
 
-    // 2. Generate B-I-N-G-O Card (Strict Ranges)
-    function generateJoyCard() {
-        userCard.innerHTML = '';
-        let cardData = [];
-        for(let c=0; c<5; c++){
-            let min = (c*15)+1;
-            let colNums = [];
-            while(colNums.length < 5){
-                let r = Math.floor(Math.random() * 15) + min;
-                if(!colNums.includes(r)) colNums.push(r);
+    function startGame() {
+        let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
+        let idx = 0;
+        setInterval(() => {
+            if(idx < 75) {
+                let n = pool[idx];
+                document.getElementById('currentBall').innerText = n;
+                document.getElementById('m'+n).classList.add('called');
+                let cardCell = document.getElementById('c'+n);
+                if(cardCell) cardCell.classList.add('hit');
+                // Check win logic here
+                idx++;
             }
-            cardData[c] = colNums;
-        }
-
-        for(let r=0; r<5; r++){
-            for(let c=0; c<5; c++){
-                let cell = document.createElement('div');
-                cell.className = 'c-cell';
-                let val = cardData[c][r];
-                if(r===2 && c===2) {
-                    cell.innerText="FREE"; cell.classList.add('free'); cell.id="free";
-                } else {
-                    cell.innerText=val; cell.id="c"+val;
-                }
-                userCard.appendChild(cell);
-            }
-        }
+        }, 4000);
     }
-
-    // 3. Auto-Click and Win Logic
-    function checkBingo() {
-        const cells = Array.from(document.querySelectorAll('.c-cell'));
-        const hits = cells.map(c => c.classList.contains('hit') || c.classList.contains('free'));
-        let won = false;
-        // Horizontal lines
-        for(let i=0; i<25; i+=5) if(hits.slice(i, i+5).every(h => h)) won = true;
-        // 4 Corners
-        if(hits[0] && hits[4] && hits[20] && hits[24]) won = true;
-        
-        if(won) {
-            bingoBtn.disabled = false;
-            bingoBtn.classList.add('btn-active');
-        }
-    }
-
-    // Start Simulation
-    let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
-    let idx = 0;
-    setInterval(() => {
-        if(idx < 75) {
-            let n = pool[idx];
-            calledSet.add(n);
-            currentBall.innerText = n;
-            document.getElementById('m'+n).classList.add('called');
-            let cardCell = document.getElementById('c'+n);
-            if(cardCell) cardCell.classList.add('hit');
-            checkBingo();
-            idx++;
-        }
-    }, 4000);
-
-    generateJoyCard();
 </script>
 </body>
 </html>
