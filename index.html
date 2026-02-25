@@ -1,155 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Money Bingo Hub</title>
     <style>
-        :root { --main-bg: #1a1a2e; --accent: #e94560; --text: #ffffff; }
-        body { background: var(--main-bg); color: var(--text); font-family: sans-serif; margin: 0; overflow: hidden; }
+        body { background: #0f0c29; color: white; font-family: 'Arial', sans-serif; margin: 0; padding: 10px; text-align: center; }
+        .header { display: flex; justify-content: space-between; padding: 5px; background: #24243e; border-radius: 5px; margin-bottom: 10px; font-size: 14px; }
         
-        /* Top Header Stats */
-        .header { display: flex; justify-content: space-around; background: #16213e; padding: 10px; font-size: 12px; border-bottom: 2px solid var(--accent); }
+        .game-container { display: flex; gap: 10px; justify-content: center; align-items: flex-start; }
         
-        .main-container { display: grid; grid-template-columns: 1fr 1fr; height: 80vh; padding: 10px; gap: 10px; }
+        /* Left Side: Bingo Board */
+        .board-container { width: 40%; }
+        .bingo-letters { display: grid; grid-template-columns: repeat(5, 1fr); font-weight: bold; color: #ff0055; margin-bottom: 5px; }
+        .full-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #1a1a2e; padding: 5px; border: 1px solid #444; }
+        .b-cell { aspect-ratio: 1; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 9px; }
         
-        /* Left Side: Full Bingo Board */
-        .bingo-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #0f3460; padding: 5px; border-radius: 8px; }
-        .board-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 1px solid #16213e; border-radius: 2px; }
-        .called { background: var(--accent); color: white; font-weight: bold; }
-
-        /* Right Side Top: Big Ball & Last 3 */
-        .status-side { display: flex; flex-direction: column; align-items: center; }
-        .current-ball { width: 80px; height: 80px; background: radial-gradient(circle, #fff, #ccc); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; border: 4px solid var(--accent); margin-bottom: 10px; }
-        .history { display: flex; gap: 5px; height: 40px; }
-        .history-ball { width: 30px; height: 30px; background: #4e4e4e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-
-        /* Bottom Right: User Card */
-        .user-card-area { margin-top: auto; }
-        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; color: black; padding: 5px; border-radius: 5px; }
-        .card-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border: 1px solid #ddd; }
-        .marked { background: #ff4d4d; color: white; border-radius: 50%; }
-
-        /* Overlays */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
-        #timer { font-size: 48px; color: var(--accent); }
+        /* Right Side: User Card */
+        .card-container { width: 55%; }
+        .user-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; background: #fff; color: #000; padding: 8px; border-radius: 8px; box-shadow: 0 0 15px rgba(233,69,96,0.5); }
+        .c-cell { aspect-ratio: 1; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; }
+        
+        .marked { background: #ff0055 !important; color: white !important; animation: pop 0.3s ease; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        
+        #status { margin-top: 15px; color: #00d4ff; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <span>Derash: <b id="derash">0.00</b></span>
-    <span>Balls: <b id="ball-count">0</b></span>
-    <span>Players: <b>200</b></span>
-    <span>Card: <b id="card-num">#127</b></span>
+    <span>Game ID: #882</span>
+    <span id="timer">Call: --</span>
+    <span>Coins: 500</span>
 </div>
 
-<div class="main-container">
-    <div class="bingo-board" id="global-board"></div>
-    <div class="status-side">
-        <div class="current-ball" id="active-ball">?</div>
-        <div class="history" id="ball-history"></div>
-        <div class="user-card-area">
-            <div class="card-grid" id="user-card"></div>
-        </div>
+<div class="game-container">
+    <div class="board-container">
+        <div class="bingo-letters"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></div>
+        <div class="full-board" id="mainBoard"></div>
     </div>
-</div>
 
-<div id="countdown-overlay" class="overlay">
-    <h2>Next Game Starting In</h2>
-    <div id="timer">20</div>
-    <p>Picking Card #<span id="picking-card">127</span>...</p>
-</div>
-
-<div id="win-overlay" class="overlay">
-    <h1 style="color: gold;">BINGO!</h1>
-    <h2 id="winner-name">Username</h2>
-    <p id="win-detail">Card #127 won with 4 Corners!</p>
-</div>
-
-<script>
-    const GAME_DURATION = 120; // 120 seconds per game loop
-    const LOBBY_TIME = 20; // 20s countdown
-    const ballHistory = [];
-    let userCard = [];
-
-    // Initialize Global Board 1-75
-    const board = document.getElementById('global-board');
-    for(let i=1; i<=75; i++) {
-        const div = document.createElement('div');
-        div.className = 'board-cell';
-        div.id = `cell-${i}`;
-        div.innerText = i;
-        board.appendChild(div);
-    }
-
-    function generateCard() {
-        const card = [];
-        const ranges = [[1,15], [16,30], [31,45], [46,60], [61,75]];
-        for(let r=0; r<5; r++) {
-            let col = [];
-            while(col.length < 5) {
-                let n = Math.floor(Math.random() * (ranges[r][1] - ranges[r][0] + 1)) + ranges[r][0];
-                if(!col.includes(n)) col.push(n); // Fixed repeating numbers issue
-            }
-            card.push(col);
-        }
-        return card;
-    }
-
-    function renderCard(cardData) {
-        const grid = document.getElementById('user-card');
-        grid.innerHTML = '';
-        for(let i=0; i<5; i++) {
-            for(let j=0; j<5; j++) {
-                const val = (i===2 && j===2) ? "FREE" : cardData[j][i];
-                const cell = document.createElement('div');
-                cell.className = 'card-cell';
-                cell.id = `card-${val}`;
-                cell.innerText = val;
-                grid.appendChild(cell);
-            }
-        }
-    }
-
-    function updateGame() {
-        const now = Math.floor(Date.now() / 1000);
-        const cycle = now % GAME_DURATION;
-
-        if (cycle < LOBBY_TIME) {
-            // LOBBY PHASE
-            document.getElementById('countdown-overlay').style.display = 'flex';
-            document.getElementById('win-overlay').style.display = 'none';
-            document.getElementById('timer').innerText = LOBBY_TIME - cycle;
-            if(cycle === 0) userCard = generateCard(); 
-            renderCard(userCard);
-        } else {
-            // PLAY PHASE
-            document.getElementById('countdown-overlay').style.display = 'none';
-            const playTime = cycle - LOBBY_TIME;
-            const ballIndex = Math.floor(playTime / 5); // New ball every 5s
+    <div class="card-container">
+        <div class="
             
-            // Deterministic Ball Drawing (Same for everyone)
-            const seed = Math.floor(now / GAME_DURATION);
-            const balls = Array.from({length: 75}, (_, i) => i + 1).sort(() => 0.5 - Math.sin(seed));
-            
-            const currentBall = balls[ballIndex];
-            document.getElementById('active-ball').innerText = currentBall;
-            document.getElementById(`cell-${currentBall}`).classList.add('called');
-            
-            // Auto-mark card
-            const cardCell = document.getElementById(`card-${currentBall}`);
-            if(cardCell) cardCell.classList.add('marked');
-
-            // Winner Logic (Simulated for 8 seconds at end of game)
-            if (playTime > 80 && playTime < 88) {
-                document.getElementById('win-overlay').style.display = 'flex';
-                document.getElementById('winner-name').innerText = "Player_" + (seed % 200);
-            }
-        }
-    }
-
-    setInterval(updateGame, 1000);
-</script>
-</body>
-</html>
