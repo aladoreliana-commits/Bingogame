@@ -3,42 +3,147 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body { background: #0f0c29; color: white; font-family: 'Arial', sans-serif; margin: 0; padding: 10px; text-align: center; }
-        .header { display: flex; justify-content: space-between; padding: 5px; background: #24243e; border-radius: 5px; margin-bottom: 10px; font-size: 14px; }
+        :root { --main-bg: #0b0e14; --card-bg: #ffffff; --accent: #28a745; --bingo-red: #ff4d4d; }
+        body { background: var(--main-bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
         
-        .game-container { display: flex; gap: 10px; justify-content: center; align-items: flex-start; }
+        /* Card Selection Overlay */
+        #selector-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; width: 100%; max-height: 80vh; }
+        .card-option { background: #1a1a2e; padding: 15px; border: 1px solid #444; border-radius: 5px; text-align: center; }
         
-        /* Left Side: Bingo Board */
-        .board-container { width: 40%; }
-        .bingo-letters { display: grid; grid-template-columns: repeat(5, 1fr); font-weight: bold; color: #ff0055; margin-bottom: 5px; }
-        .full-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: #1a1a2e; padding: 5px; border: 1px solid #444; }
-        .b-cell { aspect-ratio: 1; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+        /* Main Layout */
+        .game-layout { display: flex; gap: 8px; margin-top: 40px; }
+        .board-left { width: 35%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: #222; padding: 2px; }
+        .b-cell { aspect-ratio: 1; border: 1px solid #111; font-size: 8px; display: flex; align-items: center; justify-content: center; }
         
-        /* Right Side: User Card */
-        .card-container { width: 55%; }
-        .user-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; background: #fff; color: #000; padding: 8px; border-radius: 8px; box-shadow: 0 0 15px rgba(233,69,96,0.5); }
-        .c-cell { aspect-ratio: 1; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; }
+        .card-right { width: 63%; }
+        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: var(--card-bg); padding: 6px; border-radius: 4px; color: #333; }
+        .c-cell { aspect-ratio: 1; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; position: relative; }
         
-        .marked { background: #ff0055 !important; color: white !important; animation: pop 0.3s ease; }
-        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        /* States */
+        .free-space { background: var(--accent) !important; color: white !important; font-size: 8px; }
+        .marked { background: var(--bingo-red) !important; color: white !important; border-radius: 50%; transform: scale(0.9); }
+        .called-ball { background: var(--bingo-red); color: white; border-radius: 50%; }
         
-        #status { margin-top: 15px; color: #00d4ff; font-weight: bold; }
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: #1a1a2e; padding: 10px; display: flex; justify-content: space-between; z-index: 50; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <span>Game ID: #882</span>
-    <span id="timer">Call: --</span>
-    <span>Coins: 500</span>
+<div id="selector-overlay">
+    <h2>Pick Your Card (1-200)</h2>
+    <div class="card-grid" id="cardList"></div>
 </div>
 
-<div class="game-container">
-    <div class="board-container">
-        <div class="bingo-letters"><span>B</span><span>I</span><span>N</span><span>G</span><span>O</span></div>
-        <div class="full-board" id="mainBoard"></div>
-    </div>
+<div class="header">
+    <span id="cardIdDisplay">Card: #--</span>
+    <span id="callDisplay" style="color:var(--accent); font-weight:bold;">Waiting...</span>
+    <span id="winStatus">💰 Active</span>
+</div>
 
-    <div class="card-container">
-        <div class="
-            
+<div class="game-layout">
+    <div class="board-left" id="masterBoard"></div>
+    <div class="card-right">
+        <div class="bingo-card" id="activeCard"></div>
+    </div>
+</div>
+
+<script>
+    const cardList = document.getElementById('cardList');
+    const activeCardDiv = document.getElementById('activeCard');
+    const masterBoard = document.getElementById('masterBoard');
+    let selectedNumbers = [];
+    let calledNumbers = new Set();
+
+    // 1. Generate the Master Board (Left)
+    for(let i=1; i<=75; i++) {
+        let div = document.createElement('div');
+        div.className = 'b-cell';
+        div.id = 'm-' + i;
+        div.innerText = i;
+        masterBoard.appendChild(div);
+    }
+
+    // 2. Card Generation Logic (Fixed & Unique)
+    function generateFixedCard(seed) {
+        let card = [];
+        // Use seed to make numbers "Fixed" for specific card IDs
+        for (let col = 0; col < 5; col++) {
+            let start = (col * 15) + 1;
+            let pool = Array.from({length: 15}, (_, i) => start + i);
+            // Scramble based on card ID seed
+            let scrambled = pool.sort(() => Math.sin(seed + start++) * 10000 % 1);
+            card[col] = scrambled.slice(0, 5);
+        }
+        return card;
+    }
+
+    // 3. Setup Selection Screen
+    for(let i=1; i<=200; i++) {
+        let btn = document.createElement('div');
+        btn.className = 'card-option';
+        btn.innerText = "CARD #" + i;
+        btn.onclick = () => selectCard(i);
+        cardList.appendChild(btn);
+    }
+
+    function selectCard(id) {
+        document.getElementById('selector-overlay').style.display = 'none';
+        document.getElementById('cardIdDisplay').innerText = "Card: #" + id;
+        const cardData = generateFixedCard(id);
+        renderCard(cardData);
+        startGlobalCalls();
+    }
+
+    function renderCard(data) {
+        activeCardDiv.innerHTML = '';
+        for(let row=0; row<5; row++) {
+            for(let col=0; col<5; col++) {
+                let val = data[col][row];
+                let cell = document.createElement('div');
+                cell.className = 'c-cell';
+                if(row === 2 && col === 2) {
+                    cell.innerText = "FREE";
+                    cell.classList.add('free-space');
+                } else {
+                    cell.innerText = val;
+                    cell.onclick = () => { if(calledNumbers.has(val)) cell.classList.add('marked'); checkWin(); };
+                }
+                activeCardDiv.appendChild(cell);
+            }
+        }
+    }
+
+    // 4. Global Call Logic (Randomized)
+    let callPool = Array.from({length: 75}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+    let index = 0;
+
+    function startGlobalCalls() {
+        setInterval(() => {
+            if(index < 75) {
+                let ball = callPool[index];
+                calledNumbers.add(ball);
+                document.getElementById('m-' + ball).classList.add('called-ball');
+                document.getElementById('callDisplay').innerText = "BALL: " + ball;
+                index++;
+            }
+        }, 5000); // New ball every 5 seconds
+    }
+
+    function checkWin() {
+        const cells = document.querySelectorAll('.c-cell');
+        let m = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free-space'));
+        
+        // Horizontal Lines
+        for(let i=0; i<25; i+=5) if(m[i] && m[i+1] && m[i+2] && m[i+3] && m[i+4]) announceWin();
+        // Corners
+        if(m[0] && m[4] && m[20] && m[24]) announceWin();
+    }
+
+    function announceWin() {
+        document.getElementById('winStatus').innerText = "🏆 BINGO!";
+        document.getElementById('winStatus').style.color = "yellow";
+    }
+</script>
+</body>
+</html>
