@@ -6,44 +6,52 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
 
-        /* TOP SECTION: SMALLER HEADER */
-        .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 5px; background: white; height: 40px; }
-        .stat-box { text-align: center; font-size: 10px; color: #777; }
-        .stat-value { display: block; font-weight: bold; color: var(--joy-purple); font-size: 12px; }
+        /* SELECTION SCREEN (1-200) */
+        #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
+        .selection-header { padding: 10px; background: white; text-align: center; font-weight: bold; color: var(--joy-purple); }
+        .grid-1-200 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; padding: 10px; overflow-y: auto; flex-grow: 1; }
+        .card-option { background: white; padding: 10px; text-align: center; border-radius: 8px; font-weight: bold; border: 2px solid transparent; }
+        .card-option.selected { border-color: var(--joy-orange); background: #fff3e0; }
 
-        /* CALL DISPLAY: SLIMMED DOWN */
-        .call-history-section { background: white; border-radius: 15px; padding: 8px; margin: 5px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .current-call-display { background: var(--joy-purple); color: white; border-radius: 50px; width: 100%; height: 55px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-sizing: border-box; }
-        .current-call-label { font-weight: bold; font-size: 18px; letter-spacing: 1px; }
-        .call-ball-large { background: var(--joy-orange); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 3px solid white; }
-        .last-calls-row { display: flex; gap: 10px; margin-top: 5px; transform: scale(0.8); }
+        /* TOP SECTION: SLIM */
+        .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; padding: 5px; background: white; height: 35px; }
+        .stat-box { text-align: center; font-size: 9px; color: #777; }
+        .stat-value { display: block; font-weight: bold; color: var(--joy-purple); font-size: 11px; }
 
-        /* GAME BODY LAYOUT */
-        .game-body { display: flex; gap: 5px; height: calc(100vh - 140px); padding: 5px; }
+        .call-history-section { background: white; border-radius: 15px; padding: 5px; margin: 5px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .current-call-display { background: var(--joy-purple); color: white; border-radius: 50px; width: 100%; height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-sizing: border-box; }
+        .current-call-label { font-weight: bold; font-size: 16px; }
+        .call-ball-large { background: var(--joy-orange); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 2px solid white; }
 
-        /* LEFT SIDE: WIDER MASTER BOARD (1-75) */
-        .side-board-full { width: 48% !important; background: #bdc3c7; border-radius: 8px; padding: 4px; display: flex; flex-direction: column; }
-        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 4px; }
-        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 4px; font-size: 14px; }
+        /* GAME BODY: FIXED WIDTHS */
+        .game-body { display: flex; width: 100%; height: calc(100vh - 120px); box-sizing: border-box; padding: 2px; }
+
+        /* LEFT SIDE: WIDE BUT FITS */
+        .side-board-full { width: 55% !important; background: #bdc3c7; border-radius: 8px; padding: 2px; display: flex; flex-direction: column; box-sizing: border-box; }
+        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 2px; font-size: 12px; }
         .col-B { background: #f1c40f !important; } .col-I { background: #27ae60 !important; } 
         .col-N { background: #2980b9 !important; } .col-G { background: #c0392b !important; } .col-O { background: #8e44ad !important; }
 
-        .numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; overflow-y: auto; flex-grow: 1; }
-        .num-cell { background: white; aspect-ratio: 1.2; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 2px; color: #333; }
-        .num-cell.active { background: var(--joy-orange); color: white; font-weight: bold; }
+        .numbers-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; flex-grow: 1; }
+        .num-cell { background: white; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 10px; border-radius: 1px; color: #333; }
 
-        /* RIGHT SIDE: SMALLER PLAYER CARD */
-        .player-area { width: 50%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; transform: scale(0.95); transform-origin: top center; }
-        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; }
-        .card-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; border-radius: 50%; }
-        .card-cell.marked { background: var(--joy-green); color: white; }
-        .card-cell.free { background: var(--joy-green); color: white; font-size: 8px; }
-
-        .bingo-btn { margin-top: 15px; width: 100%; height: 50px; background: #bdc3c7; color: white; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; text-transform: uppercase; }
-        .bingo-btn.active { background: linear-gradient(to bottom, #bdc3c7, #95a5a6); cursor: pointer; }
+        /* RIGHT SIDE: SMALL PLAYER CARD */
+        .player-area { width: 45%; display: flex; flex-direction: column; align-items: center; padding: 2px; box-sizing: border-box; }
+        .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 5px; border-radius: 8px; width: 100%; }
+        .card-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border-radius: 50%; }
+        
+        .bingo-btn { margin-top: 10px; width: 90%; height: 40px; background: #ccc; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body>
+
+    <div id="selection-screen">
+        <div class="selection-header">CHOOSE YOUR CARD (1-200)</div>
+        <div class="grid-1-200" id="selectionGrid"></div>
+        <div style="padding: 10px;"><button onclick="startGame()" style="width:100%; height:50px; background:var(--joy-purple); color:white; border-radius:10px; border:none; font-weight:bold;">START GAME</button></div>
+    </div>
+
     <div class="header-stats">
         <div class="stat-box"><span class="stat-value">920</span>DERASH</div>
         <div class="stat-box"><span class="stat-value">115</span>PLAYERS</div>
@@ -57,11 +65,6 @@
             <div class="current-call-label">Current Call</div>
             <div class="call-ball-large">--</div>
         </div>
-        <div class="last-calls-row">
-            <div class="call-ball-large" style="width:30px; height:30px; font-size:14px; opacity:0.5;">--</div>
-            <div class="call-ball-large" style="width:30px; height:30px; font-size:14px; opacity:0.5;">--</div>
-            <div class="call-ball-large" style="width:30px; height:30px; font-size:14px; opacity:0.5;">--</div>
-        </div>
     </div>
 
     <div class="game-body">
@@ -70,19 +73,33 @@
                 <div class="letter-box col-B">B</div><div class="letter-box col-I">I</div>
                 <div class="letter-box col-N">N</div><div class="letter-box col-G">G</div><div class="letter-box col-O">O</div>
             </div>
-            <div class="numbers-grid" id="masterBoard">
-                </div>
+            <div class="numbers-grid" id="masterBoard"></div>
         </div>
-
         <div class="player-area">
-            <div class="card-grid" id="playerCard">
-                </div>
+            <div class="card-grid" id="playerCard"></div>
             <button class="bingo-btn">BINGO</button>
         </div>
     </div>
 
     <script>
-        // Master Board Generation
+        // Setup 1-200 Selection
+        const selGrid = document.getElementById('selectionGrid');
+        for(let i=1; i<=200; i++) {
+            const div = document.createElement('div');
+            div.className = 'card-option';
+            div.textContent = i;
+            div.onclick = () => {
+                document.querySelectorAll('.card-option').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+            };
+            selGrid.appendChild(div);
+        }
+
+        function startGame() {
+            document.getElementById('selection-screen').style.display = 'none';
+        }
+
+        // Setup 1-75 Master Board
         const board = document.getElementById('masterBoard');
         for (let i = 1; i <= 15; i++) {
             for (let col = 0; col < 5; col++) {
@@ -93,12 +110,13 @@
                 board.appendChild(cell);
             }
         }
-        // Player Card Mockup
+
+        // Setup Player Card
         const card = document.getElementById('playerCard');
-        const mockNums = [15,28,33,53,62,6,20,31,55,64,2,16,'FREE',60,70,12,25,41,58,75,3,30,37,56,72];
+        const mockNums = [15,28,33,53,62,6,20,31,55,64,2,16,'F',60,70,12,25,41,58,75,3,30,37,56,72];
         mockNums.forEach(n => {
             const cell = document.createElement('div');
-            cell.className = n === 'FREE' ? 'card-cell free' : 'card-cell';
+            cell.className = 'card-cell';
             cell.textContent = n;
             card.appendChild(cell);
         });
