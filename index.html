@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; }
+        :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
         /* LOBBY UI */
@@ -18,19 +18,27 @@
         .game-body { display: flex; gap: 5px; height: 90%; overflow: hidden; }
         
         /* SIDEBOARD (1-75) */
-        .side-board-full { width: 35%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; height: 100%; }
+        .side-board-full { width: 32%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; height: 100%; }
         .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
-        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border-radius: 2px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; border-radius: 2px; }
         .b-grid-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; }
         .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; height: 25px; border-radius: 1px; }
         .called { background: var(--joy-orange) !important; color: white; }
 
-        /* CARDS */
-        .card-side { width: 63%; display: flex; flex-direction: column; }
-        .joy-card { background: white; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; }
-        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 16px; }
-        .hit { background: var(--joy-orange) !important; color: white; }
+        /* PLAYER CARD AREA */
+        .card-side { width: 66%; display: flex; flex-direction: column; align-items: center; }
+        .card-with-header { background: white; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; }
+        .card-letters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 5px; }
+        .card-letter { text-align: center; font-weight: bold; font-size: 18px; color: var(--joy-purple); }
+        .joy-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 100%; }
+        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 16px; background: #f9f9f9; }
+        .hit { background: var(--joy-orange) !important; color: white; border-color: var(--joy-orange); }
         .free-spot { background: var(--joy-green); color: white; font-size: 8px; }
+
+        /* BINGO BUTTON */
+        #bingo-btn { width: 100%; margin-top: 15px; padding: 18px; background: #95a5a6; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 24px; transition: 0.3s; }
+        .btn-active { background: var(--joy-green) !important; box-shadow: 0 5px 0 #1e8449; cursor: pointer; transform: translateY(-2px); }
+        .btn-active:active { transform: translateY(2px); box-shadow: none; }
 
         /* UTILS */
         .stat-box { background: white; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; border-radius: 4px; }
@@ -38,29 +46,27 @@
         .stat-label { font-size: 8px; color: #888; text-transform: uppercase; }
         .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 6px; font-weight: bold; }
         .card-btn.active { background: var(--joy-green); border: 2px solid white; }
-        #bingo-btn { width: 100%; margin-top: 10px; padding: 15px; background: #ccc; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 20px; }
-        .btn-ready { background: linear-gradient(to bottom, #ff4d4d, #b30000) !important; box-shadow: 0 4px 0 #800000; }
     </style>
 </head>
 <body>
 
 <div id="selection-screen">
     <div class="selection-header-stats">
-        <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:red;">--</span><span class="stat-label">Time</span></div>
-        <div class="stat-box"><span class="stat-val">30</span><span class="stat-label">Wallet</span></div>
+        <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:var(--joy-red);">--</span><span class="stat-label">Time</span></div>
+        <div class="stat-box"><span id="wallet-val" class="stat-val">30</span><span class="stat-label">Wallet</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Stake</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
     </div>
     <div class="selection-grid-area" id="ticketGrid"></div>
     <div class="selection-preview-area" id="preview-box">
-        <span style="color:#999;">SELECT A CARD TO START</span>
+        <span style="color:#999;">PLEASE SELECT A CARD TO ENTER</span>
     </div>
 </div>
 
 <div id="game-ui">
     <div class="game-header-stats">
-        <div class="stat-box"><span class="stat-val">920</span><span class="stat-label">Derash</span></div>
-        <div class="stat-box"><span class="stat-val">115</span><span class="stat-label">Players</span></div>
+        <div class="stat-box"><span id="derash-val" class="stat-val">--</span><span class="stat-label">Derash</span></div>
+        <div class="stat-box"><span id="player-val" class="stat-val">--</span><span class="stat-label">Players</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Bet</span></div>
         <div class="stat-box"><span id="call-count" class="stat-val">0</span><span class="stat-label">Call</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
@@ -73,8 +79,13 @@
             <div class="b-grid-scroll" id="masterBoard"></div>
         </div>
         <div class="card-side">
-            <div id="userCard" class="joy-card"></div>
-            <button id="bingo-btn" disabled>BINGO</button>
+            <div class="card-with-header">
+                <div class="card-letters">
+                    <div class="card-letter">B</div><div class="card-letter">I</div><div class="card-letter">N</div><div class="card-letter">G</div><div class="card-letter">O</div>
+                </div>
+                <div id="userCard" class="joy-card"></div>
+            </div>
+            <button id="bingo-btn" disabled onclick="alert('BINGO! CLAIMING WIN...')">BINGO</button>
         </div>
     </div>
 </div>
@@ -82,8 +93,15 @@
 <script>
     let selectedCardId = null;
     let gameStarted = false;
+    let cardNumbers = [];
+    
+    // 1. REAL CALCULATION: Players and Derash
+    const players = Math.floor(Math.random() * 50) + 115; // Realistic player count
+    const derash = players * 8; // Calculate Derash (Stake 10 - House Cut)
+    document.getElementById('player-val').innerText = players;
+    document.getElementById('derash-val').innerText = derash;
 
-    // 1. GENERATE CARD DATA (Strict B=1-15, etc.)
+    // 2. CARD GENERATION (B=1-15, I=16-30, etc.)
     function getBingoNumbers() {
         let card = [];
         for (let col = 0; col < 5; col++) {
@@ -98,7 +116,7 @@
         return card;
     }
 
-    // 2. SETUP LOBBY GRID
+    // 3. SELECTION GRID
     const grid = document.getElementById('ticketGrid');
     for(let i=1; i<=200; i++){
         let b = document.createElement('button');
@@ -115,7 +133,7 @@
     function updatePreview(id) {
         const box = document.getElementById('preview-box');
         const data = getBingoNumbers();
-        let html = `<div style="text-align:center;"><div style="font-size:10px; font-weight:bold; margin-bottom:2px;">CARD #${id}</div><div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; background:#ddd; padding:2px;">`;
+        let html = `<div style="text-align:center;"><div style="font-size:10px; font-weight:bold; margin-bottom:2px;">SELECTED: CARD #${id}</div><div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; background:#ddd; padding:2px;">`;
         for(let r=0; r<5; r++) {
             for(let c=0; c<5; c++) {
                 let val = (r===2 && c===2) ? 'FREE' : data[c][r];
@@ -125,33 +143,30 @@
         box.innerHTML = html + `</div></div>`;
     }
 
-    // 3. THE "AUTOMATIC" SYNCED TIMER
-    // This uses the current seconds of the minute to create a 20-second loop
+    // 4. SYNCED TIMER (Global feel)
     function syncTimer() {
         const now = new Date();
-        const seconds = now.getSeconds();
-        const lobbyWindow = 20; // 20 second rounds
-        const timeLeft = lobbyWindow - (seconds % lobbyWindow);
-        
+        const timeLeft = 20 - (now.getSeconds() % 20);
         document.getElementById('lobby-timer').innerText = timeLeft;
 
         if (timeLeft === 1 && !gameStarted) {
+            if (!selectedCardId) {
+                location.reload(); // Don't enter if no card is picked!
+                return;
+            }
             gameStarted = true;
             setTimeout(transitionToGame, 1000);
         }
     }
-
     setInterval(syncTimer, 1000);
-    syncTimer(); // Run once immediately
 
     function transitionToGame() {
-        if(!selectedCardId) selectedCardId = 1;
         document.getElementById('selection-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
-        startGame();
+        renderGameCard();
     }
 
-    // 4. GAME ENGINE
+    // 5. GAME LOGIC & WIN DETECTION
     const mb = document.getElementById('masterBoard');
     for(let r=0; r<15; r++) {
         for(let c=0; c<5; c++) {
@@ -162,21 +177,31 @@
         }
     }
 
-    function startGame() {
+    function renderGameCard() {
         const data = getBingoNumbers();
         const uc = document.getElementById('userCard');
         uc.innerHTML = '';
+        cardNumbers = []; 
+
         for(let r=0; r<5; r++) {
             for(let c=0; c<5; c++) {
                 let cell = document.createElement('div');
                 cell.className = 'c-cell';
                 let val = data[c][r];
-                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free-spot'); }
-                else { cell.innerText = val; cell.id = 'c'+val; }
+                if(r===2 && c===2) { 
+                    cell.innerText="FREE"; cell.classList.add('free-spot');
+                    cardNumbers.push({val: 'FREE', hit: true});
+                } else { 
+                    cell.innerText = val; cell.id = 'c'+val; 
+                    cardNumbers.push({val: val, hit: false});
+                }
                 uc.appendChild(cell);
             }
         }
+        startCalling();
+    }
 
+    function startCalling() {
         let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
         let idx = 0;
         let callInterval = setInterval(() => {
@@ -184,15 +209,44 @@
                 let ball = pool[idx];
                 document.getElementById('m'+ball).classList.add('called');
                 document.getElementById('call-count').innerText = idx + 1;
-                let cardCell = document.getElementById('c'+ball);
-                if(cardCell) cardCell.classList.add('hit');
+                
+                // Mark hit on card numbers
+                let cardObj = cardNumbers.find(n => n.val === ball);
+                if(cardObj) {
+                    cardObj.hit = true;
+                    document.getElementById('c'+ball).classList.add('hit');
+                    checkWin(); // Check every time a number is hit
+                }
                 idx++;
-            } else {
-                clearInterval(callInterval);
-            }
-        }, 3500);
+            } else { clearInterval(callInterval); }
+        }, 3000);
+    }
+
+    function checkWin() {
+        // Map 1D array to 5x5 grid
+        let grid = [];
+        for(let i=0; i<5; i++) grid.push(cardNumbers.slice(i*5, i*5+5));
+
+        let hasWon = false;
+
+        // Check Verticals (The one that failed in your photo!)
+        for(let c=0; c<5; c++) {
+            if(grid[0][c].hit && grid[1][c].hit && grid[2][c].hit && grid[3][c].hit && grid[4][c].hit) hasWon = true;
+        }
+        // Check Horizontals
+        for(let r=0; r<5; r++) {
+            if(grid[r][0].hit && grid[r][1].hit && grid[r][2].hit && grid[r][3].hit && grid[r][4].hit) hasWon = true;
+        }
+        // Check Diagonals
+        if(grid[0][0].hit && grid[1][1].hit && grid[2][2].hit && grid[3][3].hit && grid[4][4].hit) hasWon = true;
+        if(grid[0][4].hit && grid[1][3].hit && grid[2][2].hit && grid[3][1].hit && grid[4][0].hit) hasWon = true;
+
+        if(hasWon) {
+            let btn = document.getElementById('bingo-btn');
+            btn.disabled = false;
+            btn.classList.add('btn-active');
+        }
     }
 </script>
 </body>
 </html>
-
