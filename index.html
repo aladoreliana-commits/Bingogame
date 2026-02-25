@@ -25,11 +25,10 @@
 
         /* GAME BODY */
         .game-body { display: flex; flex: 1; padding: 8px; gap: 8px; box-sizing: border-box; overflow: hidden; }
-        .master-board-container, .player-area { display: flex; flex-direction: column; }
-        .master-board-container { width: 42%; }
-        .player-area { width: 58%; align-items: center; gap: 5px; }
+        .master-board-container { width: 42%; display: flex; flex-direction: column; }
+        .player-area { width: 58%; display: flex; flex-direction: column; align-items: center; gap: 5px; }
 
-        .letter-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; margin-bottom: 2px; }
+        .letter-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; }
         .letter-box { aspect-ratio: 1.2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border-radius: 4px 4px 0 0; }
 
         .grid-base { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 4px; border-radius: 0 0 8px 8px; width: 100%; box-sizing: border-box; }
@@ -44,7 +43,7 @@
         /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
         .preview-container { height: 25%; background: white; padding: 10px; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #previewGrid { width: 60%; height: 90%; } /* Smaller Preview */
+        #previewGrid { width: 60%; height: 90%; }
 
         .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 20px; pointer-events: none; width: 100%; margin-top: 5px; }
         .bingo-btn.active { background: var(--joy-green); pointer-events: auto; }
@@ -104,22 +103,20 @@
     </div>
 
     <script>
-        let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
+        let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null, selectionTime = 20;
 
-        // FIXED SYNCED COUNTDOWN (Mocking a server start time)
-        function updateGlobalTimer() {
-            const now = Math.floor(Date.now() / 1000);
-            const cycle = 30; // 20s selection + game time simulation
-            const remaining = 20 - (now % cycle);
-            
-            if (remaining > 0) {
-                document.getElementById('countdown').textContent = remaining + "s";
-                document.getElementById('selection-screen').style.display = 'flex';
-            } else if (remaining <= 0 && !gameActive) {
-                start();
+        // FIXED COUNTDOWN LOGIC
+        // This timer only runs the countdown once. When it hits 0, the game starts and STAYS started.
+        const countdownTimer = setInterval(() => {
+            if (!gameActive) {
+                selectionTime--;
+                document.getElementById('countdown').textContent = selectionTime + "s";
+                if (selectionTime <= 0) {
+                    clearInterval(countdownTimer);
+                    start();
+                }
             }
-        }
-        const timerInterval = setInterval(updateGlobalTimer, 1000);
+        }, 1000);
 
         // SELECTION
         const selGrid = document.getElementById('selectionGrid');
@@ -225,7 +222,11 @@
                 wc.appendChild(c);
             });
             modal.style.display = 'flex';
-            setTimeout(() => { location.reload(); }, 10000); // 10s wait before restart
+            
+            // After 10 seconds, reload the page to reset the 20s countdown and start a fresh round
+            setTimeout(() => { 
+                location.reload(); 
+            }, 10000);
         }
     </script>
 </body>
