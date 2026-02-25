@@ -6,132 +6,148 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
-        /* 1. SELECTION SCREEN LAYOUT */
+        /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
         
-        /* TOP 1/4: Stats and Card Preview */
-        .selection-top { height: 30%; background: white; border-bottom: 2px solid #ccc; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; }
+        /* TOP 3/4: The 200 Grid */
+        .selection-top-grid { height: 70%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; }
+        
+        /* BOTTOM 1/4: Card Preview & Stats */
+        .selection-bottom-preview { height: 30%; background: white; border-top: 2px solid #ccc; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; }
         .sel-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 5px; }
-        .sel-preview-area { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #f9f9f9; border-radius: 8px; border: 1px dashed #bbb; position: relative; }
-        .preview-label { position: absolute; top: 2px; left: 5px; font-size: 10px; color: #888; }
+        .sel-preview-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #f0f0f0; border-radius: 8px; border: 1px solid #ddd; position: relative; }
         
-        /* BOTTOM 3/4: The 200 Grid */
-        .selection-bottom { height: 70%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; }
-        
-        /* 2. SHARED COMPONENTS */
         .stat-box { background: white; border-radius: 4px; text-align: center; padding: 4px; border: 1px solid #ddd; }
         .stat-label { font-size: 9px; color: #888; display: block; }
         .stat-val { font-weight: bold; color: var(--joy-purple); font-size: 14px; }
         
         .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 5px; font-weight: bold; font-size: 12px; box-shadow: 0 2px 0 #d35400; }
-        .card-btn.active { background: var(--joy-green); transform: scale(0.95); box-shadow: none; }
+        .card-btn.active { background: var(--joy-green); transform: scale(0.9); box-shadow: none; }
 
-        /* Preview Card Style */
-        .mini-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; transform: scale(0.7); }
-        .mini-cell { width: 25px; height: 25px; background: white; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border-radius: 2px; }
+        /* Preview Card */
+        .mini-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+        .mini-cell { width: 22px; height: 22px; background: white; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; border-radius: 2px; }
 
-        /* 3. MAIN GAME UI (Hidden during selection) */
+        /* MAIN GAME UI */
         #game-ui { display: none; padding: 5px; height: 100vh; flex-direction: column; }
         .header-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; }
         .game-main { display: flex; gap: 5px; flex-grow: 1; }
         .side-board { width: 35%; background: #bdc3c7; border-radius: 4px; padding: 2px; }
-        .card-area { width: 63%; }
-        
-        /* Master Board Numbers */
+        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px; border-radius: 2px; }
         .b-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
         .b-cell { aspect-ratio: 1; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; }
         .called { background: var(--joy-orange) !important; color: white; }
         
-        /* Player Card */
         .joy-card { background: white; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 6px; border-radius: 8px; border: 2px solid #ddd; }
         .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 14px; }
-        .hit { background: var(--joy-orange); color: white; }
-        .free { background: var(--joy-green); color: white; font-size: 8px; }
+        .hit { background: var(--joy-orange) !important; color: white; border: none; }
+        .free-cell { background: var(--joy-green); color: white; font-size: 8px; }
     </style>
 </head>
 <body>
 
 <div id="selection-screen">
-    <div class="selection-top">
+    <div class="selection-top-grid" id="ticketGrid"></div>
+    <div class="selection-bottom-preview">
         <div class="sel-stats-row">
             <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:red;">20</span><span class="stat-label">Time</span></div>
             <div class="stat-box"><span class="stat-val">30</span><span class="stat-label">Wallet</span></div>
             <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Stake</span></div>
             <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
         </div>
-        <div class="sel-preview-area" id="preview-container">
-            <span class="preview-label">PREVIEW CARD</span>
-            <div id="card-preview">Select a card number below</div>
+        <div class="sel-preview-container" id="preview-box">
+            <div style="color:#888; font-size:12px;">Tap a card number above</div>
         </div>
     </div>
-    <div class="selection-bottom" id="ticketGrid"></div>
 </div>
 
 <div id="game-ui">
     <div class="header-grid">
-        <div class="stat-box"><span id="derash" class="stat-val">--</span><span class="stat-label">Derash</span></div>
-        <div class="stat-box"><span id="pCount" class="stat-val">--</span><span class="stat-label">Players</span></div>
+        <div class="stat-box"><span id="derash" class="stat-val">920</span><span class="stat-label">Derash</span></div>
+        <div class="stat-box"><span id="pCount" class="stat-val">115</span><span class="stat-label">Players</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Bet</span></div>
         <div class="stat-box"><span id="call-count" class="stat-val">0</span><span class="stat-label">Call</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
     </div>
     <div class="game-main">
-        <div class="side-board" id="masterBoard"></div>
-        <div class="card-area">
+        <div class="side-board">
+            <div class="letters-header">
+                <div class="letter-box" style="background:#f1c40f">B</div><div class="letter-box" style="background:#27ae60">I</div><div class="letter-box" style="background:#2980b9">N</div><div class="letter-box" style="background:#c0392b">G</div><div class="letter-box" style="background:#8e44ad">O</div>
+            </div>
+            <div class="b-grid" id="masterBoard"></div>
+        </div>
+        <div style="width: 63%;">
             <div id="userCard" class="joy-card"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Real Calculation Setup
-    const realPlayers = Math.floor(Math.random() * 115) + 5; // 115 players
-    document.getElementById('pCount').innerText = realPlayers;
-    document.getElementById('derash').innerText = realPlayers * 8; // 920 Derash
-
     let selectedCardId = null;
     let lobbyTime = 20;
 
-    // 2. 200 Card Grid (3/4 Screen)
+    // 1. Correct B-I-N-G-O Generator (Vertical Ranges)
+    function generateBingoNumbers() {
+        let card = [];
+        for (let c = 0; c < 5; c++) {
+            let min = (c * 15) + 1;
+            let col = [];
+            while (col.length < 5) {
+                let r = Math.floor(Math.random() * 15) + min;
+                if (!col.includes(r)) col.push(r);
+            }
+            card[c] = col;
+        }
+        return card;
+    }
+
+    // 2. 200 Card Grid (TOP 3/4)
     const grid = document.getElementById('ticketGrid');
     for(let i=1; i<=200; i++){
         let b = document.createElement('button');
-        b.className = 'card-btn';
-        b.innerText = i;
+        b.className = 'card-btn'; b.innerText = i;
         b.onclick = () => {
             document.querySelectorAll('.card-btn').forEach(x => x.classList.remove('active'));
             b.classList.add('active');
             selectedCardId = i;
-            showPreview(i);
+            updatePreview();
         };
         grid.appendChild(b);
     }
 
-    // 3. Lobby Countdown (Mandatory 20s)
+    // 3. Preview Logic (BOTTOM 1/4)
+    function updatePreview() {
+        const box = document.getElementById('preview-box');
+        const data = generateBingoNumbers();
+        let html = `<div class="mini-card">`;
+        for(let r=0; r<5; r++) {
+            for(let c=0; c<5; c++) {
+                let val = (r===2 && c===2) ? 'FREE' : data[c][r];
+                html += `<div class="mini-cell">${val}</div>`;
+            }
+        }
+        html += `</div>`;
+        box.innerHTML = html;
+    }
+
+    // 4. Fixed 20s Lobby
     const timer = setInterval(() => {
         lobbyTime--;
         document.getElementById('lobby-timer').innerText = lobbyTime;
-        if(lobbyTime <= 0){
+        if(lobbyTime <= 0) {
             clearInterval(timer);
             if(!selectedCardId) selectedCardId = Math.floor(Math.random() * 200) + 1;
             document.getElementById('selection-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
-            startGame(selectedCardId);
+            startGame();
         }
     }, 1000);
 
-    // 4. Preview Function (1/4 Screen)
-    function showPreview(id) {
-        const preview = document.getElementById('card-preview');
-        preview.innerHTML = `<div class="mini-card">` + 
-            Array(25).fill(0).map((_, idx) => `<div class="mini-cell">${idx === 12 ? 'FREE' : Math.floor(Math.random()*75)+1}</div>`).join('') + 
-            `</div><div style="font-size:10px; font-weight:bold; margin-top:-5px;">CARD #${id}</div>`;
-    }
-
-    // 5. Game Logic (Vertical Master Board)
+    // 5. Game Setup
     const mb = document.getElementById('masterBoard');
-    for(let r=0; r<15; r++){
-        for(let c=0; c<5; c++){
+    for(let r=0; r<15; r++) {
+        for(let c=0; c<5; c++) {
             let n = (c*15)+r+1;
             let d = document.createElement('div');
             d.className='b-cell'; d.id='m'+n; d.innerText=n;
@@ -139,44 +155,33 @@
         }
     }
 
-    function startGame(id) {
-        generateCard();
-        let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
-        let idx = 0;
-        setInterval(() => {
-            if(idx < 75){
-                let ball = pool[idx];
-                document.getElementById('m'+ball).classList.add('called');
-                document.getElementById('call-count').innerText = idx + 1;
-                let c = document.getElementById('c'+ball);
-                if(c) c.classList.add('hit');
-                idx++;
-            }
-        }, 4000);
-    }
-
-    function generateCard() {
+    function startGame() {
         const uc = document.getElementById('userCard');
+        const data = generateBingoNumbers();
         uc.innerHTML = '';
-        let cardData = [];
-        for(let c=0; c<5; c++){
-            let min = (c*15)+1;
-            let col = [];
-            while(col.length < 5){
-                let r = Math.floor(Math.random() * 15) + min;
-                if(!col.includes(r)) col.push(r);
-            }
-            cardData[c] = col;
-        }
-        for(let r=0; r<5; r++){
-            for(let c=0; c<5; c++){
-                let cell = document.createElement('div'); cell.className = 'c-cell';
-                let val = cardData[c][r];
-                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free'); }
+        for(let r=0; r<5; r++) {
+            for(let c=0; c<5; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'c-cell';
+                let val = data[c][r];
+                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free-cell'); }
                 else { cell.innerText = val; cell.id = 'c'+val; }
                 uc.appendChild(cell);
             }
         }
+
+        let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
+        let idx = 0;
+        setInterval(() => {
+            if(idx < 75) {
+                let ball = pool[idx];
+                document.getElementById('m'+ball).classList.add('called');
+                document.getElementById('call-count').innerText = idx+1;
+                let cardCell = document.getElementById('c'+ball);
+                if(cardCell) cardCell.classList.add('hit');
+                idx++;
+            }
+        }, 4000);
     }
 </script>
 </body>
