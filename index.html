@@ -6,79 +6,74 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }
         
-        /* 1. SELECTION SCREEN: GRID ON TOP, PREVIEW ON BOTTOM */
+        /* LOBBY UI */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
-        
-        /* TOP 3/4: Grid of 200 cards */
-        .selection-grid-top { height: 70%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; border-bottom: 2px solid #ccc; }
-        
-        /* BOTTOM 1/4: Stats and Card Preview */
-        .selection-preview-bottom { height: 30%; background: white; display: flex; flex-direction: column; padding: 5px; box-sizing: border-box; }
-        
-        .sel-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 5px; }
-        .stat-box { background: white; border-radius: 4px; text-align: center; padding: 2px; border: 1px solid #ddd; }
-        .stat-label { font-size: 8px; color: #888; display: block; text-transform: uppercase; }
-        .stat-val { font-weight: bold; color: var(--joy-purple); font-size: 14px; }
+        .selection-header-stats { height: 12%; background: white; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 8px; border-bottom: 2px solid #ccc; box-sizing: border-box; }
+        .selection-grid-area { height: 63%; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; box-sizing: border-box; }
+        .selection-preview-area { height: 25%; background: white; border-top: 2px solid #ccc; display: flex; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
 
-        .preview-container { flex-grow: 1; background: #f8f8f8; border: 1px dashed #bbb; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        /* GAME UI */
+        #game-ui { display: none; padding: 5px; height: 100vh; flex-direction: column; box-sizing: border-box; }
+        .game-header-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; height: 10%; }
+        .game-body { display: flex; gap: 5px; height: 90%; overflow: hidden; }
         
-        /* 2. BUTTONS AND CELLS */
-        .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; box-shadow: 0 2px 0 #d35400; }
-        .card-btn.active { background: var(--joy-green); box-shadow: none; transform: scale(0.95); }
-
-        .mini-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
-        .mini-cell { width: 22px; height: 22px; background: white; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; border-radius: 2px; color: #333; }
-        .mini-free { background: var(--joy-green); color: white; font-size: 6px; }
-
-        /* 3. MAIN GAME UI */
-        #game-ui { display: none; padding: 5px; height: 100vh; flex-direction: column; }
-        .header-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 5px; }
-        .game-body { display: flex; gap: 5px; }
-        .master-side { width: 35%; background: #bdc3c7; border-radius: 4px; padding: 2px; }
-        .card-side { width: 63%; }
-
-        .b-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; }
-        .b-cell { aspect-ratio: 1; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+        /* SIDEBOARD (1-75) */
+        .side-board-full { width: 35%; background: #bdc3c7; border-radius: 4px; padding: 2px; display: flex; flex-direction: column; height: 100%; }
+        .letters-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-bottom: 2px; }
+        .letter-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border-radius: 2px; }
+        .b-grid-scroll { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; overflow-y: auto; }
+        .b-cell { background: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; height: 25px; border-radius: 1px; }
         .called { background: var(--joy-orange) !important; color: white; }
 
-        .real-card { background: white; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 6px; border-radius: 8px; border: 2px solid #ddd; }
-        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 14px; color: #333; }
-        .hit { background: var(--joy-orange) !important; color: white; border: none; }
-        .free-main { background: var(--joy-green); color: white; font-size: 8px; border: none; }
+        /* CARDS */
+        .card-side { width: 63%; display: flex; flex-direction: column; }
+        .joy-card { background: white; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; border-radius: 10px; border: 2px solid #ddd; width: 100%; box-sizing: border-box; }
+        .c-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; font-size: 16px; }
+        .hit { background: var(--joy-orange) !important; color: white; }
+        .free-spot { background: var(--joy-green); color: white; font-size: 8px; }
 
-        #bingo-btn { width: 100%; margin-top: 8px; padding: 12px; background: #ccc; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 18px; }
-        .ready { background: linear-gradient(to bottom, #ff4d4d, #b30000) !important; cursor: pointer; }
+        /* UTILS */
+        .stat-box { background: white; border: 1px solid #ddd; text-align: center; display: flex; flex-direction: column; justify-content: center; border-radius: 4px; }
+        .stat-val { font-weight: bold; color: var(--joy-purple); font-size: 16px; }
+        .stat-label { font-size: 8px; color: #888; text-transform: uppercase; }
+        .card-btn { aspect-ratio: 1; background: var(--joy-orange); color: white; border: none; border-radius: 6px; font-weight: bold; }
+        .card-btn.active { background: var(--joy-green); border: 2px solid white; }
+        #bingo-btn { width: 100%; margin-top: 10px; padding: 15px; background: #ccc; border: none; border-radius: 10px; color: white; font-weight: bold; font-size: 20px; }
+        .btn-ready { background: linear-gradient(to bottom, #ff4d4d, #b30000) !important; box-shadow: 0 4px 0 #800000; }
     </style>
 </head>
 <body>
 
 <div id="selection-screen">
-    <div class="selection-grid-top" id="ticketGrid"></div>
-    <div class="selection-preview-bottom">
-        <div class="sel-stats-row">
-            <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:red;">20</span><span class="stat-label">Time</span></div>
-            <div class="stat-box"><span class="stat-val">30</span><span class="stat-label">Wallet</span></div>
-            <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Stake</span></div>
-            <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
-        </div>
-        <div class="preview-container" id="preview-box">
-            <span style="color:#999; font-size:12px;">TAP A NUMBER TO PREVIEW CARD</span>
-        </div>
+    <div class="selection-header-stats">
+        <div class="stat-box"><span id="lobby-timer" class="stat-val" style="color:red;">--</span><span class="stat-label">Time</span></div>
+        <div class="stat-box"><span class="stat-val">30</span><span class="stat-label">Wallet</span></div>
+        <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Stake</span></div>
+        <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
+    </div>
+    <div class="selection-grid-area" id="ticketGrid"></div>
+    <div class="selection-preview-area" id="preview-box">
+        <span style="color:#999;">SELECT A CARD TO START</span>
     </div>
 </div>
 
 <div id="game-ui">
-    <div class="header-grid">
-        <div class="stat-box"><span id="derash" class="stat-val">920</span><span class="stat-label">Derash</span></div>
-        <div class="stat-box"><span id="pCount" class="stat-val">115</span><span class="stat-label">Players</span></div>
+    <div class="game-header-stats">
+        <div class="stat-box"><span class="stat-val">920</span><span class="stat-label">Derash</span></div>
+        <div class="stat-box"><span class="stat-val">115</span><span class="stat-label">Players</span></div>
         <div class="stat-box"><span class="stat-val">10</span><span class="stat-label">Bet</span></div>
         <div class="stat-box"><span id="call-count" class="stat-val">0</span><span class="stat-label">Call</span></div>
         <div class="stat-box"><span class="stat-val">1 of 1</span><span class="stat-label">Game</span></div>
     </div>
     <div class="game-body">
-        <div class="master-side" id="masterBoard"></div>
+        <div class="side-board-full">
+            <div class="letters-header">
+                <div class="letter-box" style="background:#f1c40f">B</div><div class="letter-box" style="background:#27ae60">I</div><div class="letter-box" style="background:#2980b9">N</div><div class="letter-box" style="background:#c0392b">G</div><div class="letter-box" style="background:#8e44ad">O</div>
+            </div>
+            <div class="b-grid-scroll" id="masterBoard"></div>
+        </div>
         <div class="card-side">
-            <div id="userCard" class="real-card"></div>
+            <div id="userCard" class="joy-card"></div>
             <button id="bingo-btn" disabled>BINGO</button>
         </div>
     </div>
@@ -86,24 +81,24 @@
 
 <script>
     let selectedCardId = null;
-    let lobbyTime = 20;
+    let gameStarted = false;
 
-    // 1. FIXED BINGO GENERATOR (Column Specific)
-    function generateBingoNumbers() {
+    // 1. GENERATE CARD DATA (Strict B=1-15, etc.)
+    function getBingoNumbers() {
         let card = [];
         for (let col = 0; col < 5; col++) {
-            let min = (col * 15) + 1; // Col 0: 1, Col 1: 16...
-            let numbers = [];
-            while (numbers.length < 5) {
+            let min = (col * 15) + 1;
+            let nums = [];
+            while (nums.length < 5) {
                 let r = Math.floor(Math.random() * 15) + min;
-                if (!numbers.includes(r)) numbers.push(r);
+                if (!nums.includes(r)) nums.push(r);
             }
-            card[col] = numbers;
+            card[col] = nums;
         }
         return card;
     }
 
-    // 2. TICKET GRID (Top 3/4)
+    // 2. SETUP LOBBY GRID
     const grid = document.getElementById('ticketGrid');
     for(let i=1; i<=200; i++){
         let b = document.createElement('button');
@@ -117,36 +112,46 @@
         grid.appendChild(b);
     }
 
-    // 3. PREVIEW LOGIC (Bottom 1/4)
     function updatePreview(id) {
         const box = document.getElementById('preview-box');
-        const data = generateBingoNumbers(); // Now generated with correct B-I-N-G-O ranges
-        let html = `<div style="font-size:10px; font-weight:bold; margin-bottom:2px; color:var(--joy-purple)">CARD #${id}</div><div class="mini-card">`;
+        const data = getBingoNumbers();
+        let html = `<div style="text-align:center;"><div style="font-size:10px; font-weight:bold; margin-bottom:2px;">CARD #${id}</div><div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; background:#ddd; padding:2px;">`;
         for(let r=0; r<5; r++) {
             for(let c=0; c<5; c++) {
                 let val = (r===2 && c===2) ? 'FREE' : data[c][r];
-                let isFree = val === 'FREE' ? 'mini-free' : '';
-                html += `<div class="mini-cell ${isFree}">${val}</div>`;
+                html += `<div style="width:20px; height:20px; background:white; font-size:9px; display:flex; align-items:center; justify-content:center;">${val}</div>`;
             }
         }
-        html += `</div>`;
-        box.innerHTML = html;
+        box.innerHTML = html + `</div></div>`;
     }
 
-    // 4. LOBBY TIMER
-    const timer = setInterval(() => {
-        lobbyTime--;
-        document.getElementById('lobby-timer').innerText = lobbyTime;
-        if(lobbyTime <= 0) {
-            clearInterval(timer);
-            if(!selectedCardId) selectedCardId = Math.floor(Math.random() * 200) + 1;
-            document.getElementById('selection-screen').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'flex';
-            startGame();
-        }
-    }, 1000);
+    // 3. THE "AUTOMATIC" SYNCED TIMER
+    // This uses the current seconds of the minute to create a 20-second loop
+    function syncTimer() {
+        const now = new Date();
+        const seconds = now.getSeconds();
+        const lobbyWindow = 20; // 20 second rounds
+        const timeLeft = lobbyWindow - (seconds % lobbyWindow);
+        
+        document.getElementById('lobby-timer').innerText = timeLeft;
 
-    // 5. GAME ENGINE
+        if (timeLeft === 1 && !gameStarted) {
+            gameStarted = true;
+            setTimeout(transitionToGame, 1000);
+        }
+    }
+
+    setInterval(syncTimer, 1000);
+    syncTimer(); // Run once immediately
+
+    function transitionToGame() {
+        if(!selectedCardId) selectedCardId = 1;
+        document.getElementById('selection-screen').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'flex';
+        startGame();
+    }
+
+    // 4. GAME ENGINE
     const mb = document.getElementById('masterBoard');
     for(let r=0; r<15; r++) {
         for(let c=0; c<5; c++) {
@@ -158,7 +163,7 @@
     }
 
     function startGame() {
-        const data = generateBingoNumbers();
+        const data = getBingoNumbers();
         const uc = document.getElementById('userCard');
         uc.innerHTML = '';
         for(let r=0; r<5; r++) {
@@ -166,7 +171,7 @@
                 let cell = document.createElement('div');
                 cell.className = 'c-cell';
                 let val = data[c][r];
-                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free-main'); }
+                if(r===2 && c===2) { cell.innerText="FREE"; cell.classList.add('free-spot'); }
                 else { cell.innerText = val; cell.id = 'c'+val; }
                 uc.appendChild(cell);
             }
@@ -174,33 +179,20 @@
 
         let pool = Array.from({length:75}, (_,i)=>i+1).sort(()=>Math.random()-0.5);
         let idx = 0;
-        setInterval(() => {
+        let callInterval = setInterval(() => {
             if(idx < 75) {
                 let ball = pool[idx];
                 document.getElementById('m'+ball).classList.add('called');
                 document.getElementById('call-count').innerText = idx + 1;
                 let cardCell = document.getElementById('c'+ball);
-                if(cardCell) {
-                    cardCell.classList.add('hit');
-                    checkBingo();
-                }
+                if(cardCell) cardCell.classList.add('hit');
                 idx++;
+            } else {
+                clearInterval(callInterval);
             }
-        }, 4000);
-    }
-
-    function checkBingo() {
-        const cells = Array.from(document.querySelectorAll('.c-cell'));
-        const hits = cells.map(c => c.classList.contains('hit') || c.classList.contains('free-main'));
-        let won = false;
-        for(let i=0; i<25; i+=5) if(hits.slice(i, i+5).every(h => h)) won = true;
-        if(hits[0] && hits[4] && hits[20] && hits[24]) won = true;
-        if(won) {
-            const btn = document.getElementById('bingo-btn');
-            btn.disabled = false;
-            btn.classList.add('ready');
-        }
+        }, 3500);
     }
 </script>
 </body>
 </html>
+
