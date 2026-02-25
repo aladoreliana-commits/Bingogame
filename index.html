@@ -1,149 +1,258 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo Hub Professional</title>
     <style>
-        :root { --main-bg: #0b0e14; --card-bg: #ffffff; --accent: #28a745; --bingo-red: #ff4d4d; }
-        body { background: var(--main-bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
-        
-        /* Card Selection Overlay */
-        #selector-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; width: 100%; max-height: 80vh; }
-        .card-option { background: #1a1a2e; padding: 15px; border: 1px solid #444; border-radius: 5px; text-align: center; }
-        
-        /* Main Layout */
-        .game-layout { display: flex; gap: 8px; margin-top: 40px; }
-        .board-left { width: 35%; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: #222; padding: 2px; }
-        .b-cell { aspect-ratio: 1; border: 1px solid #111; font-size: 8px; display: flex; align-items: center; justify-content: center; }
-        
-        .card-right { width: 63%; }
-        .bingo-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: var(--card-bg); padding: 6px; border-radius: 4px; color: #333; }
-        .c-cell { aspect-ratio: 1; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; position: relative; }
-        
-        /* States */
-        .free-space { background: var(--accent) !important; color: white !important; font-size: 8px; }
-        .marked { background: var(--bingo-red) !important; color: white !important; border-radius: 50%; transform: scale(0.9); }
-        .called-ball { background: var(--bingo-red); color: white; border-radius: 50%; }
-        
-        .header { position: fixed; top: 0; left: 0; width: 100%; background: #1a1a2e; padding: 10px; display: flex; justify-content: space-between; z-index: 50; }
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: #ffffff;
+            --primary-red: #ff3e3e;
+            --bingo-green: #28a745;
+            --accent-blue: #00d4ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a2e;
+            padding: 8px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+
+        .timer-box {
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Game Layout */
+        .main-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+
+        /* Left Side: Bingo Board (1-75) */
+        .board-left {
+            width: 38%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            background: #16213e;
+            padding: 5px;
+            border-radius: 5px;
+            height: fit-content;
+        }
+
+        .b-cell {
+            aspect-ratio: 1;
+            background: #0f3460;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            border-radius: 2px;
+            border: 0.5px solid #1a1a2e;
+        }
+
+        .b-cell.active {
+            background: var(--primary-red);
+            box-shadow: 0 0 8px var(--primary-red);
+        }
+
+        /* Right Side: Player Card */
+        .card-right {
+            width: 60%;
+        }
+
+        .bingo-card {
+            background: var(--card-bg);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            padding: 8px;
+            border-radius: 8px;
+            color: #222;
+        }
+
+        .c-cell {
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            position: relative;
+            border-radius: 4px;
+        }
+
+        .c-cell.free {
+            background: var(--bingo-green);
+            color: white;
+            font-size: 8px;
+        }
+
+        .c-cell.marked::after {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            background: rgba(255, 62, 62, 0.8);
+            border-radius: 50%;
+        }
+
+        /* Bingo Announcement Overlay */
+        #win-overlay {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border: 2px solid gold;
+            text-align: center;
+            z-index: 1000;
+            border-radius: 15px;
+        }
     </style>
 </head>
 <body>
 
-<div id="selector-overlay">
-    <h2>Pick Your Card (1-200)</h2>
-    <div class="card-grid" id="cardList"></div>
+<div class="status-bar">
+    <div>Player #<span id="player-id">--</span></div>
+    <div class="timer-box" id="timer">00:20</div>
+    <div id="call-display">BALL: --</div>
 </div>
 
-<div class="header">
-    <span id="cardIdDisplay">Card: #--</span>
-    <span id="callDisplay" style="color:var(--accent); font-weight:bold;">Waiting...</span>
-    <span id="winStatus">💰 Active</span>
-</div>
+<div class="main-container">
+    <div class="board-left" id="master-board"></div>
 
-<div class="game-layout">
-    <div class="board-left" id="masterBoard"></div>
     <div class="card-right">
-        <div class="bingo-card" id="activeCard"></div>
+        <div class="bingo-card" id="user-card"></div>
     </div>
 </div>
 
+<div id="win-overlay">
+    <h1 style="color: gold; margin: 0;">BINGO!</h1>
+    <p id="winner-name" style="color: white; font-size: 18px;"></p>
+</div>
+
 <script>
-    const cardList = document.getElementById('cardList');
-    const activeCardDiv = document.getElementById('activeCard');
-    const masterBoard = document.getElementById('masterBoard');
-    let selectedNumbers = [];
+    const masterBoard = document.getElementById('master-board');
+    const userCard = document.getElementById('user-card');
+    const timerDisplay = document.getElementById('timer');
+    const ballDisplay = document.getElementById('call-display');
+    
     let calledNumbers = new Set();
+    let timeLeft = 20;
 
-    // 1. Generate the Master Board (Left)
-    for(let i=1; i<=75; i++) {
-        let div = document.createElement('div');
-        div.className = 'b-cell';
-        div.id = 'm-' + i;
-        div.innerText = i;
-        masterBoard.appendChild(div);
-    }
-
-    // 2. Card Generation Logic (Fixed & Unique)
-    function generateFixedCard(seed) {
-        let card = [];
-        // Use seed to make numbers "Fixed" for specific card IDs
-        for (let col = 0; col < 5; col++) {
-            let start = (col * 15) + 1;
-            let pool = Array.from({length: 15}, (_, i) => start + i);
-            // Scramble based on card ID seed
-            let scrambled = pool.sort(() => Math.sin(seed + start++) * 10000 % 1);
-            card[col] = scrambled.slice(0, 5);
+    // 1. Setup Master Board (Vertical Columns)
+    for (let r = 0; r < 15; r++) {
+        for (let c = 0; c < 5; c++) {
+            let num = (c * 15) + r + 1;
+            let cell = document.createElement('div');
+            cell.className = 'b-cell';
+            cell.id = `ball-${num}`;
+            cell.innerText = num;
+            masterBoard.appendChild(cell);
         }
-        return card;
     }
 
-    // 3. Setup Selection Screen
-    for(let i=1; i<=200; i++) {
-        let btn = document.createElement('div');
-        btn.className = 'card-option';
-        btn.innerText = "CARD #" + i;
-        btn.onclick = () => selectCard(i);
-        cardList.appendChild(btn);
-    }
-
-    function selectCard(id) {
-        document.getElementById('selector-overlay').style.display = 'none';
-        document.getElementById('cardIdDisplay').innerText = "Card: #" + id;
-        const cardData = generateFixedCard(id);
-        renderCard(cardData);
-        startGlobalCalls();
-    }
-
-    function renderCard(data) {
-        activeCardDiv.innerHTML = '';
-        for(let row=0; row<5; row++) {
-            for(let col=0; col<5; col++) {
-                let val = data[col][row];
+    // 2. Generate Randomized Unique Card
+    function createCard() {
+        userCard.innerHTML = '';
+        for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 5; c++) {
                 let cell = document.createElement('div');
                 cell.className = 'c-cell';
-                if(row === 2 && col === 2) {
-                    cell.innerText = "FREE";
-                    cell.classList.add('free-space');
+                
+                if (r === 2 && c === 2) {
+                    cell.innerText = 'FREE';
+                    cell.classList.add('free');
                 } else {
-                    cell.innerText = val;
-                    cell.onclick = () => { if(calledNumbers.has(val)) cell.classList.add('marked'); checkWin(); };
+                    let min = (c * 15) + 1;
+                    let num = Math.floor(Math.random() * 15) + min;
+                    cell.innerText = num;
+                    cell.onclick = () => {
+                        if (calledNumbers.has(num)) {
+                            cell.classList.add('marked');
+                            checkWin();
+                        }
+                    };
                 }
-                activeCardDiv.appendChild(cell);
+                userCard.appendChild(cell);
             }
         }
     }
 
-    // 4. Global Call Logic (Randomized)
-    let callPool = Array.from({length: 75}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-    let index = 0;
-
-    function startGlobalCalls() {
+    // 3. Game Loop (The 20s Timer & Calls)
+    function startTimer() {
         setInterval(() => {
-            if(index < 75) {
-                let ball = callPool[index];
-                calledNumbers.add(ball);
-                document.getElementById('m-' + ball).classList.add('called-ball');
-                document.getElementById('callDisplay').innerText = "BALL: " + ball;
-                index++;
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                timeLeft = 20;
+                makeCall();
             }
-        }, 5000); // New ball every 5 seconds
+            timerDisplay.innerText = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+        }, 1000);
+    }
+
+    function makeCall() {
+        let newBall;
+        do {
+            newBall = Math.floor(Math.random() * 75) + 1;
+        } while (calledNumbers.has(newBall));
+
+        calledNumbers.add(newBall);
+        ballDisplay.innerText = `BALL: ${newBall}`;
+        document.getElementById(`ball-${newBall}`).classList.add('active');
     }
 
     function checkWin() {
-        const cells = document.querySelectorAll('.c-cell');
-        let m = Array.from(cells).map(c => c.classList.contains('marked') || c.classList.contains('free-space'));
-        
-        // Horizontal Lines
-        for(let i=0; i<25; i+=5) if(m[i] && m[i+1] && m[i+2] && m[i+3] && m[i+4]) announceWin();
-        // Corners
-        if(m[0] && m[4] && m[20] && m[24]) announceWin();
+        const cells = Array.from(document.querySelectorAll('.c-cell'));
+        const marks = cells.map(c => c.classList.contains('marked') || c.classList.contains('free'));
+
+        // Check Horizontal Lines
+        for (let i = 0; i < 25; i += 5) {
+            if (marks[i] && marks[i+1] && marks[i+2] && marks[i+3] && marks[i+4]) showWin();
+        }
+
+        // Check Corners
+        if (marks[0] && marks[4] && marks[20] && marks[24]) showWin();
     }
 
-    function announceWin() {
-        document.getElementById('winStatus').innerText = "🏆 BINGO!";
-        document.getElementById('winStatus').style.color = "yellow";
+    function showWin() {
+        const overlay = document.getElementById('win-overlay');
+        overlay.style.display = 'block';
+        document.getElementById('winner-name').innerText = "Winner: Player 127";
+        setTimeout(() => overlay.style.display = 'none', 8000);
     }
+
+    createCard();
+    startTimer();
+    document.getElementById('player-id').innerText = Math.floor(Math.random() * 200) + 1;
 </script>
+
 </body>
 </html>
