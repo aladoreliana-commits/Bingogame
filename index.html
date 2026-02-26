@@ -9,7 +9,6 @@
         }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        /* HEADER COLORS */
         .col-b { background: var(--b-col) !important; color: white; }
         .col-i { background: var(--i-col) !important; color: white; }
         .col-n { background: var(--n-col) !important; color: white; }
@@ -22,32 +21,34 @@
         .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; }
         .card-opt.active { background: var(--joy-orange); color: white; border-color: white; transform: scale(1.05); }
 
-        /* GAME UI */
+        /* HEADER & HISTORY */
         .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 6px; text-align: center; font-size: 10px; border-bottom: 1px solid #eee; }
         .stat-val { font-weight: bold; color: var(--joy-purple); display: block; font-size: 13px; }
-        .history-bar { background: white; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; border-bottom: 2px solid #ddd; }
-        .curr-row { background: var(--joy-purple); color: white; border-radius: 50px; width: 92%; height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; box-sizing: border-box; }
-        .big-ball { background: var(--joy-orange); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 18px; }
+        
+        .history-bar { background: white; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 12px; border-bottom: 2px solid #ddd; }
+        .curr-call-box { background: var(--joy-purple); color: white; border-radius: 50px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; height: 44px; }
+        .big-ball { background: var(--joy-orange); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 16px; }
+        .hist-balls { display: flex; gap: 5px; }
+        .small-ball { background: #ffd085; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #7a4a00; font-weight: bold; border: 1px solid #f39c12; }
 
         .game-body { display: flex; flex: 1; padding: 8px; gap: 8px; box-sizing: border-box; overflow: hidden; }
         .master-side { width: 45%; display: flex; flex-direction: column; }
         .player-side { width: 55%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-        /* GRID STYLING */
+        /* GRIDS */
         .letter-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; }
         .letter { aspect-ratio: 1.2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border-radius: 4px 4px 0 0; }
         .grid-main { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 4px; border-radius: 0 0 8px 8px; width: 100%; box-sizing: border-box; }
         
-        /* Master Grid Layout (15 rows per column) */
         .m-grid { flex: 1; grid-template-rows: repeat(15, 1fr); grid-auto-flow: column; }
         .m-cell { background: #f8f8f8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 1px solid #eee; }
-        .m-cell.on { background: var(--joy-orange); color: white; border-color: transparent; }
+        .m-cell.on { background: var(--joy-orange); color: white; }
 
         .p-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border-radius: 4px; }
         .p-cell.hit { background: var(--joy-green); color: white; }
         
-        .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 22px; width: 100%; pointer-events: none; margin-top: 10px; }
-        .bingo-btn.on { background: var(--joy-green); pointer-events: auto; box-shadow: 0 4px 0 #1e8449; }
+        .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 22px; width: 100%; pointer-events: none; margin-top: 5px; }
+        .bingo-btn.on { background: var(--joy-green); pointer-events: auto; }
 
         #win-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
     </style>
@@ -56,8 +57,8 @@
 
     <div id="selection-screen">
         <div id="status-bar" style="background:var(--joy-red); color:white; padding:15px; text-align:center;">
-            <div id="timer-label" style="font-weight:bold; font-size:20px;">CHOOSE YOUR CARD: <span id="timer">20</span>s</div>
-            <div style="font-size:12px; margin-top:5px;">PLAYERS READY: <span id="pCount">0</span>/2</div>
+            <div style="font-weight:bold; font-size:20px;">GAME STARTING IN: <span id="timer">20</span>s</div>
+            <div id="wait-msg" style="font-size:12px; margin-top:5px;">PLAYERS READY: <span id="pCount">0</span></div>
         </div>
         <div class="sel-grid" id="cardGrid"></div>
     </div>
@@ -66,12 +67,12 @@
         <div style="background:white; border-radius:15px; width:100%; max-width:300px; text-align:center; overflow:hidden;">
             <div style="background:var(--joy-orange); color:white; padding:15px; font-size:24px; font-weight:bold;">BINGO!</div>
             <div style="padding:20px;">
-                <p id="winner-text" style="font-weight:bold; font-size:18px; color:var(--joy-purple);">YOU WON!</p>
+                <p style="font-weight:bold; font-size:18px; color:var(--joy-purple);">WINNER DETECTED</p>
                 <div class="letter-row">
                     <div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div>
                 </div>
                 <div class="grid-main" id="win-view"></div>
-                <p style="font-size:13px; color:#333; margin-top:12px; font-weight:bold;">Prize: <span id="win-amount">0</span> ETB</p>
+                <p style="font-size:15px; margin-top:12px; font-weight:bold;">Prize: <span id="win-amount">0</span> ETB</p>
             </div>
         </div>
     </div>
@@ -85,9 +86,14 @@
     </div>
 
     <div class="history-bar">
-        <div class="curr-row">
-            <span style="font-weight:bold;">Current Call</span>
+        <div class="curr-call-box">
+            <span style="font-size: 11px; font-weight: bold;">CALL</span>
             <div class="big-ball" id="currBall">--</div>
+        </div>
+        <div class="hist-balls" id="last3Row">
+            <div class="small-ball">--</div>
+            <div class="small-ball">--</div>
+            <div class="small-ball">--</div>
         </div>
     </div>
 
@@ -103,7 +109,7 @@
 
     <script>
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
-        let fakePlayers = Math.floor(Math.random() * 3) + 1; 
+        let fakePlayers = Math.floor(Math.random() * 5) + 1; 
         let countdown = 20;
 
         function getLockedCard(id) {
@@ -123,15 +129,21 @@
             if (gameActive) return;
             let totalJoined = (selectedCardId ? 1 : 0) + fakePlayers;
             document.getElementById('pCount').textContent = totalJoined;
-            if (countdown > 0) { countdown--; document.getElementById('timer').textContent = countdown; } 
-            else {
+            
+            if (countdown > 0) { 
+                countdown--; 
+                document.getElementById('timer').textContent = countdown; 
+            } else {
                 if (totalJoined >= 2) startGame(totalJoined);
-                else { countdown = 20; fakePlayers++; }
+                else { 
+                    countdown = 20; 
+                    fakePlayers++; // Simulate someone joining to help reach minimum
+                }
             }
         }, 1000);
 
         const grid = document.getElementById('cardGrid');
-        for(let i=1; i<=100; i++) {
+        for(let i=1; i<=200; i++) {
             const d = document.createElement('div'); d.className='card-opt'; d.textContent=i;
             d.onclick=()=>{
                 document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
@@ -153,7 +165,7 @@
                     <div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div>
                 </div>
                 <div class="grid-main" id="pGrid"></div>
-                <p style="margin:8px; font-size:12px; font-weight:bold; color:#666;">Card #${selectedCardId}</p>
+                <p style="margin:5px; font-size:11px; font-weight:bold; color:#888;">MY CARD #${selectedCardId}</p>
                 <button class="bingo-btn" id="bingoBtn" onclick="winGame(${playerCount})">BINGO</button>`;
 
             selectedCardData.forEach((n,idx)=>{
@@ -167,7 +179,6 @@
 
         function initMaster() {
             const g = document.getElementById('masterGrid'); g.innerHTML = '';
-            // Logic: Create 5 columns (B,I,N,G,O), each with 15 numbers
             for(let col=0; col<5; col++) {
                 for(let row=1; row<=15; row++) {
                     const num = (col * 15) + row;
@@ -183,10 +194,26 @@
             const ballTimer = setInterval(() => {
                 if(!gameActive) { clearInterval(ballTimer); return; }
                 if(pool.length === 0) { location.reload(); return; }
-                ballNow = pool.pop(); called.push(ballNow);
+                
+                ballNow = pool.pop(); 
+                called.push(ballNow);
+                
+                // Update UI
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
+                
+                // Update History (Last 3)
+                const histRow = document.getElementById('last3Row');
+                const last3 = called.slice(-4, -1).reverse();
+                histRow.innerHTML = '';
+                for(let i=0; i<3; i++) {
+                    const b = document.createElement('div'); 
+                    b.className='small-ball'; 
+                    b.textContent = last3[i] || '--';
+                    histRow.appendChild(b);
+                }
+
                 checkWin();
             }, 3000);
         }
