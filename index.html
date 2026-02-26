@@ -11,7 +11,7 @@
         }
         body { background: var(--joy-bg); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        /* --- SELECTION HEADER (Only visible during selection) --- */
+        /* --- SELECTION HEADER --- */
         #selection-header {
             display: flex; justify-content: space-around; align-items: center;
             background-color: white; width: 96%; margin: 10px auto;
@@ -28,8 +28,8 @@
         /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; padding-top: 80px; }
         .sel-grid { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding-bottom: 180px; }
-        .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; }
-        .card-opt.active { background: var(--joy-orange); color: white; border-color: white; }
+        .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; transition: 0.2s; }
+        .card-opt.active { background: var(--joy-orange); color: white; border-color: white; transform: scale(1.05); }
 
         /* PREVIEW BOX */
         .preview-pane { position: fixed; bottom: 0; left: 0; right: 0; background: white; height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); border-top: 2px solid #ddd; z-index: 2100; }
@@ -37,7 +37,7 @@
         .mini-cell { aspect-ratio: 1; background: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 0.5px solid #ddd; }
         .mini-cell.f-space { background: var(--joy-green); color: white; }
 
-        /* --- GAME UI HEADER (Visible during active game) --- */
+        /* GAME UI HEADER */
         .header-stats { display: grid; grid-template-columns: repeat(5, 1fr); background: white; padding: 6px; text-align: center; font-size: 10px; border-bottom: 1px solid #eee; }
         .stat-val { font-weight: bold; color: var(--joy-purple); display: block; font-size: 13px; }
         
@@ -45,7 +45,6 @@
         .curr-call-box { background: var(--joy-purple); color: white; border-radius: 50px; padding: 5px 15px; display: flex; align-items: center; gap: 10px; height: 44px; flex-shrink: 0; }
         .big-ball { background: var(--joy-orange); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 16px; }
         
-        /* Last 3 balls styling */
         .hist-balls { display: flex; gap: 5px; flex: 1; justify-content: flex-end; }
         .small-ball { background: #ffd085; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #7a4a00; font-weight: bold; border: 1px solid #f39c12; }
 
@@ -79,7 +78,7 @@
 <body>
 
     <div id="selection-header">
-        <div class="header-stat"><div id="timer" class="stat-value timer-value">20</div></div>
+        <div class="header-stat"><div id="timer" class="stat-value timer-value">--</div></div>
         <div class="header-stat"><div class="stat-label">Wallet</div><div id="wallet-bal" class="stat-value">0</div></div>
         <div class="header-stat"><div class="stat-label">Stake</div><div class="stat-value">10</div></div>
         <div class="header-stat"><div class="stat-label">Game №</div><div class="stat-value">1 of 1</div></div>
@@ -88,7 +87,7 @@
     <div id="selection-screen">
         <div class="sel-grid" id="cardGrid"></div>
         <div class="preview-pane" id="previewPane">
-            <p id="previewLabel" style="font-size:11px; margin-bottom:8px; color:#666;">Tap a card number to preview</p>
+            <p id="previewLabel" style="font-size:11px; margin-bottom:8px; color:#666;">Tap a card to enter round</p>
             <div class="mini-grid" id="miniGrid" style="display:none;"></div>
         </div>
     </div>
@@ -139,10 +138,35 @@
         tg.expand();
 
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
-        let countdown = 20;
 
         const params = new URLSearchParams(window.location.search);
         document.getElementById('wallet-bal').innerText = params.get('bal') || "0";
+
+        // --- SYNCHRONIZED TIMER LOGIC ---
+        function updateSyncTimer() {
+            if (gameActive) return;
+            
+            const now = new Date();
+            const seconds = now.getSeconds();
+            // This calculates time left in a fixed 20-second cycle (0-19, 20-39, 40-59)
+            let timeLeft = 20 - (seconds % 20);
+            
+            document.getElementById('timer').textContent = timeLeft;
+
+            // When timer hits 1, check if we can start
+            if (timeLeft === 1) {
+                setTimeout(() => {
+                    if (selectedCardId) {
+                        startGame(Math.floor(Math.random() * 5) + 2);
+                    } else {
+                        // Reset preview label if no one joined
+                        document.getElementById('previewLabel').textContent = "Waiting for players... Select a card!";
+                    }
+                }, 1000);
+            }
+        }
+        setInterval(updateSyncTimer, 1000);
+        updateSyncTimer(); // Run once immediately
 
         function getBingoCard(id) {
             let card = [];
@@ -166,21 +190,11 @@
             return flat;
         }
 
-        const syncLoop = setInterval(() => {
-            if (gameActive) return;
-            if (countdown > 0) { 
-                countdown--; 
-                document.getElementById('timer').textContent = countdown; 
-            } else {
-                if (selectedCardId) startGame(Math.floor(Math.random() * 5) + 2);
-                else countdown = 20; 
-            }
-        }, 1000);
-
         const grid = document.getElementById('cardGrid');
         for(let i=1; i<=200; i++) {
             const d = document.createElement('div'); d.className='card-opt'; d.textContent=i;
             d.onclick=()=>{
+                if(gameActive) return;
                 document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
                 d.classList.add('active'); 
                 selectedCardId=i;
@@ -193,7 +207,7 @@
         function showPreview(id) {
             const mg = document.getElementById('miniGrid');
             mg.style.display = 'grid'; mg.innerHTML = '';
-            document.getElementById('previewLabel').textContent = "Selected Card #" + id;
+            document.getElementById('previewLabel').textContent = "Joined Round with Card #" + id;
             selectedCardData.forEach(n => {
                 const c = document.createElement('div');
                 c.className = n === 'F' ? 'mini-cell f-space' : 'mini-cell';
@@ -204,7 +218,6 @@
 
         function startGame(playerCount) {
             gameActive = true;
-            // UI Switch: Hide Selection elements, show Game elements
             document.getElementById('selection-header').style.display = 'none';
             document.getElementById('selection-screen').style.display = 'none';
             document.getElementById('game-stats-bar').style.display = 'grid';
@@ -246,14 +259,11 @@
             let pool = Array.from({length:75},(_,i)=>i+1).sort(() => Math.random() - 0.5);
             const ballTimer = setInterval(() => {
                 if(!gameActive) { clearInterval(ballTimer); return; }
-                ballNow = pool.pop(); 
-                called.push(ballNow);
-                
+                ballNow = pool.pop(); called.push(ballNow);
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
                 
-                // Update History (Last 3 balls)
                 const last3 = called.slice(-4, -1).reverse();
                 const histRow = document.getElementById('last3Row');
                 histRow.innerHTML = '';
@@ -262,14 +272,13 @@
                     b.textContent = last3[i] || '--';
                     histRow.appendChild(b);
                 }
-                
                 checkWin();
             }, 3000);
         }
 
         function checkWin() {
             const wins = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
-            if(wins.find(p => p.every(i => marked.has(i))) && called.includes(ballNow)) document.getElementById('bingoBtn').classList.add('on');
+            if(wins.find(p => p.every(i => marked.has(i))) && (called.includes(ballNow) || ballNow === null)) document.getElementById('bingoBtn').classList.add('on');
         }
 
         function winGame(playerCount) {
