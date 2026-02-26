@@ -105,7 +105,6 @@
     <script>
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
 
-        // FIXED CARDS 1-200
         function getLockedCard(id) {
             let card = [];
             const seedRandom = (s) => { let x = Math.sin(s) * 10000; return x - Math.floor(x); };
@@ -119,36 +118,31 @@
             return flat;
         }
 
-        // GLOBAL SYNC LOGIC
-        function syncClock() {
+        // IMPROVED SYNC: This timer ONLY handles the countdown. 
+        // It STOPS once the game starts so it won't bounce you back.
+        const syncInterval = setInterval(() => {
+            if (gameActive) return; // Exit if game is already running
+
             const now = new Date();
             const sec = now.getSeconds();
-            const cycle = 60; // 1 minute cycle
-            const selectionPhase = 20; // First 20s is selection
+            const cycle = 60; 
+            const selectionPhase = 20;
 
             const timer = document.getElementById('timer');
             const selectionScreen = document.getElementById('selection-screen');
 
             if (sec < selectionPhase) {
-                // We are in selection time
-                if (gameActive) location.reload(); // Hard reset for new round
                 timer.textContent = selectionPhase - sec;
                 selectionScreen.style.display = 'flex';
             } else {
-                // Game is in progress
-                if (!gameActive) {
-                    if (selectedCardId) {
-                        startGame();
-                    } else {
-                        // If they join during game without selecting
-                        document.getElementById('status-bar').textContent = "GAME IN PROGRESS... PLEASE WAIT";
-                        document.getElementById('cardGrid').style.opacity = "0.3";
-                        document.getElementById('cardGrid').style.pointerEvents = "none";
-                    }
+                if (selectedCardId) {
+                    startGame();
+                } else {
+                    document.getElementById('status-bar').textContent = "GAME IN PROGRESS... WAIT";
+                    document.getElementById('cardGrid').style.opacity = "0.3";
                 }
             }
-        }
-        setInterval(syncClock, 1000);
+        }, 1000);
 
         // LOBBY
         const grid = document.getElementById('cardGrid');
@@ -194,8 +188,7 @@
         }
 
         function runLoop() {
-            const now = new Date();
-            const seed = now.getMinutes(); 
+            const seed = new Date().getMinutes(); 
             let pool = Array.from({length:75},(_,i)=>i+1);
             const shuffle = (arr, s) => {
                 for (let i = arr.length - 1; i > 0; i--) {
@@ -205,12 +198,15 @@
             };
             shuffle(pool, seed);
 
-            const loop = setInterval(() => {
-                if(!gameActive) { clearInterval(loop); return; }
+            const ballTimer = setInterval(() => {
+                if(!gameActive) { clearInterval(ballTimer); return; }
+                if(pool.length === 0) { winGame(); return; } // Auto-end if balls run out
+
                 ballNow = pool.pop(); called.push(ballNow);
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
+                
                 const hist = document.getElementById('last3Row');
                 const last3 = called.slice(-4, -1).reverse();
                 hist.innerHTML = '';
@@ -225,6 +221,7 @@
         function checkWin() {
             const wins = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
             let isWin = wins.find(p => p.every(i => marked.has(i)));
+            // Check if win is valid and contains the MOST RECENT ball
             if(isWin && isWin.some(i => selectedCardData[i] === ballNow)) {
                 document.getElementById('bingoBtn').classList.add('on');
             }
@@ -241,8 +238,11 @@
                 wv.appendChild(c);
             });
             document.getElementById('win-modal').style.display = 'flex';
+            
+            // This is the ONLY way to get back to selection: after a win.
             setTimeout(() => { location.reload(); }, 10000);
         }
     </script>
 </body>
 </html>
+
