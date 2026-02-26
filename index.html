@@ -6,20 +6,14 @@
         :root { --joy-purple: #8e44ad; --joy-orange: #f39c12; --joy-bg: #e0d0f0; --joy-green: #27ae60; --joy-red: #e74c3c; --b-col: #f1c40f; --i-col: #27ae60; --n-col: #2980b9; --g-col: #c0392b; --o-col: #8e44ad; }
         body { background: var(--joy-bg); font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        .col-b { background: var(--b-col) !important; color: white; }
-        .col-i { background: var(--i-col) !important; color: white; }
-        .col-n { background: var(--n-col) !important; color: white; }
-        .col-g { background: var(--g-col) !important; color: white; }
-        .col-o { background: var(--o-col) !important; color: white; }
-
         /* SELECTION SCREEN */
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; }
         .sel-grid { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         .card-opt { background: white; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; border: 1px solid #ccc; font-size: 14px; }
         .card-opt.active { background: var(--joy-orange); color: white; border-color: white; transform: scale(1.05); }
 
-        .preview-box { height: 175px; background: white; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
-        .mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 145px; background: #eee; padding: 3px; border-radius: 4px; }
+        .preview-box { height: 160px; background: white; border-top: 3px solid #ddd; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; }
+        .mini-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 140px; background: #eee; padding: 3px; border-radius: 4px; }
         .mini-cell { aspect-ratio: 1; background: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
 
         /* GAME UI */
@@ -28,22 +22,17 @@
         .history-bar { background: white; padding: 10px 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; border-bottom: 2px solid #ddd; }
         .curr-row { background: var(--joy-purple); color: white; border-radius: 50px; width: 92%; height: 48px; display: flex; justify-content: space-between; align-items: center; padding: 0 18px; box-sizing: border-box; }
         .big-ball { background: var(--joy-orange); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; font-size: 18px; }
-        .small-row { display: flex; gap: 10px; }
-        .small-ball { background: #ffd085; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #7a4a00; font-weight: bold; }
-
+        
         .game-body { display: flex; flex: 1; padding: 8px; gap: 8px; box-sizing: border-box; overflow: hidden; }
         .master-side { width: 40%; display: flex; flex-direction: column; }
         .player-side { width: 60%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
-        .letter-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; }
-        .letter { aspect-ratio: 1.2; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; border-radius: 4px 4px 0 0; }
-        .grid-main { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 4px; border-radius: 0 0 8px 8px; width: 100%; box-sizing: border-box; }
-        .m-grid { flex: 1; grid-template-rows: repeat(15, 1fr); background: #bdc3c7; }
-        .m-cell { background: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        .grid-main { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: white; padding: 4px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        .m-cell { background: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 1px solid #eee; }
         .m-cell.on { background: var(--joy-orange); color: white; }
-
         .p-cell { aspect-ratio: 1; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border-radius: 4px; }
         .p-cell.hit { background: var(--joy-green); color: white; }
+
         .bingo-btn { height: 50px; background: #ccc; border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 22px; width: 100%; pointer-events: none; }
         .bingo-btn.on { background: var(--joy-green); pointer-events: auto; }
 
@@ -53,13 +42,14 @@
 <body>
 
     <div id="selection-screen">
-        <div id="status-bar" style="background:var(--joy-red); color:white; padding:15px; text-align:center; font-weight:bold; font-size:20px;">
-            CHOOSE YOUR CARD: <span id="timer">--</span>s
+        <div id="status-bar" style="background:var(--joy-red); color:white; padding:15px; text-align:center;">
+            <div id="timer-label" style="font-weight:bold; font-size:20px;">CHOOSE YOUR CARD: <span id="timer">20</span>s</div>
+            <div id="player-label" style="font-size:12px; margin-top:5px;">PLAYERS READY: <span id="pCount">0</span>/2</div>
         </div>
         <div class="sel-grid" id="cardGrid"></div>
         <div class="preview-box">
              <div class="mini-grid" id="miniGrid" style="visibility:hidden;"></div>
-             <p id="miniLabel" style="font-size:11px; margin-top:5px; color:#666; font-weight:bold;">Tap a card number to preview</p>
+             <p id="miniLabel" style="font-size:11px; margin-top:5px; color:#666;">Select a card to join</p>
         </div>
     </div>
 
@@ -69,14 +59,14 @@
             <div style="padding:20px;">
                 <p id="winner-text" style="font-weight:bold; font-size:18px; color:var(--joy-purple);"></p>
                 <div class="grid-main" id="win-view"></div>
-                <p style="font-size:11px; color:#777; margin-top:12px;">Board #<span id="win-board-num"></span></p>
+                <p style="font-size:11px; color:#777; margin-top:12px;">Winning Prize: <span id="win-amount">0</span> ETB</p>
             </div>
         </div>
     </div>
 
     <div class="header-stats">
-        <div><span class="stat-val">920</span>DERASH</div>
-        <div><span class="stat-val">115</span>PLAYERS</div>
+        <div><span class="stat-val" id="totalDerash">0</span>DERASH</div>
+        <div><span class="stat-val" id="activePlayers">0</span>PLAYERS</div>
         <div><span class="stat-val">10</span>BET</div>
         <div><span class="stat-val" id="callCount">0</span>CALL</div>
         <div><span class="stat-val">1 of 1</span>GAME</div>
@@ -87,23 +77,19 @@
             <span style="font-weight:bold;">Current Call</span>
             <div class="big-ball" id="currBall">--</div>
         </div>
-        <div class="small-row" id="last3Row">
-            <div class="small-ball">--</div><div class="small-ball">--</div><div class="small-ball">--</div>
-        </div>
     </div>
 
     <div class="game-body">
-        <div class="master-side">
-            <div class="letter-row">
-                <div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div>
-            </div>
-            <div class="grid-main m-grid" id="masterGrid"></div>
-        </div>
+        <div class="master-side"><div class="grid-main" id="masterGrid" style="height:100%"></div></div>
         <div class="player-side" id="playerArea"></div>
     </div>
 
     <script>
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
+        
+        // Simulation variables for local demo
+        let fakePlayers = Math.floor(Math.random() * 5); // Randomly join some fake players
+        let countdown = 20;
 
         function getLockedCard(id) {
             let card = [];
@@ -118,33 +104,36 @@
             return flat;
         }
 
-        // IMPROVED SYNC: This timer ONLY handles the countdown. 
-        // It STOPS once the game starts so it won't bounce you back.
-        const syncInterval = setInterval(() => {
-            if (gameActive) return; // Exit if game is already running
+        // SELECTION LOGIC
+        const syncLoop = setInterval(() => {
+            if (gameActive) return;
 
-            const now = new Date();
-            const sec = now.getSeconds();
-            const cycle = 60; 
-            const selectionPhase = 20;
+            const timerDisp = document.getElementById('timer');
+            const pCountDisp = document.getElementById('pCount');
+            
+            // Total players = You (if selected) + others
+            let totalJoined = (selectedCardId ? 1 : 0) + fakePlayers;
+            pCountDisp.textContent = totalJoined;
 
-            const timer = document.getElementById('timer');
-            const selectionScreen = document.getElementById('selection-screen');
-
-            if (sec < selectionPhase) {
-                timer.textContent = selectionPhase - sec;
-                selectionScreen.style.display = 'flex';
+            if (countdown > 0) {
+                countdown--;
+                timerDisp.textContent = countdown;
             } else {
-                if (selectedCardId) {
-                    startGame();
+                // Countdown reached 0
+                if (totalJoined >= 2) {
+                    // Success: Start Game
+                    startGame(totalJoined);
                 } else {
-                    document.getElementById('status-bar').textContent = "GAME IN PROGRESS... WAIT";
-                    document.getElementById('cardGrid').style.opacity = "0.3";
+                    // Failure: Not enough players, RESET timer to 20
+                    countdown = 20;
+                    timerDisp.textContent = countdown;
+                    // Add a fake player occasionally to simulate someone joining
+                    if(Math.random() > 0.5) fakePlayers++;
                 }
             }
         }, 1000);
 
-        // LOBBY
+        // CARD LOBBY
         const grid = document.getElementById('cardGrid');
         for(let i=1; i<=200; i++) {
             const d = document.createElement('div'); d.className='card-opt'; d.textContent=i;
@@ -156,20 +145,22 @@
                 selectedCardData.forEach(n=>{
                     const c = document.createElement('div'); c.className='mini-cell'; c.textContent=n; mg.appendChild(c);
                 });
-                document.getElementById('miniLabel').textContent = "Card #"+i+" Ready";
+                document.getElementById('miniLabel').textContent = "Card #"+i+" Selected";
             };
             grid.appendChild(d);
         }
 
-        function startGame() {
+        function startGame(playerCount) {
             gameActive = true;
             document.getElementById('selection-screen').style.display = 'none';
+            document.getElementById('activePlayers').textContent = playerCount;
+            document.getElementById('totalDerash').textContent = playerCount * 8; // (Players * 10) - (Players * 2)
+
             const zone = document.getElementById('playerArea');
             zone.innerHTML = `
-                <div class="letter-row"><div class="letter col-b">B</div><div class="letter col-i">I</div><div class="letter col-n">N</div><div class="letter col-g">G</div><div class="letter col-o">O</div></div>
                 <div class="grid-main" id="pGrid"></div>
                 <p style="margin:4px; font-size:12px; font-weight:bold;">Card #${selectedCardId}</p>
-                <button class="bingo-btn" id="bingoBtn" onclick="winGame()">BINGO</button>`;
+                <button class="bingo-btn" id="bingoBtn" onclick="winGame(${playerCount})">BINGO</button>`;
 
             selectedCardData.forEach((n,idx)=>{
                 const c = document.createElement('div'); c.className = n==='F'?'p-cell hit':'p-cell'; c.textContent=n;
@@ -182,55 +173,40 @@
 
         function initMaster() {
             const g = document.getElementById('masterGrid'); g.innerHTML = '';
-            for(let i=1; i<=15; i++) for(let c=0; c<5; c++){
-                const n = i+(c*15); const d = document.createElement('div'); d.className='m-cell'; d.id='m-'+n; d.textContent=n; g.appendChild(d);
+            for(let i=1; i<=75; i++){
+                const d = document.createElement('div'); d.className='m-cell'; d.id='m-'+i; d.textContent=i; g.appendChild(d);
             }
         }
 
         function runLoop() {
-            const seed = new Date().getMinutes(); 
             let pool = Array.from({length:75},(_,i)=>i+1);
-            const shuffle = (arr, s) => {
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor((Math.sin(s + i) * 10000 % 1 + 1) / 2 * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-            };
-            shuffle(pool, seed);
+            pool.sort(() => Math.random() - 0.5);
 
             const ballTimer = setInterval(() => {
                 if(!gameActive) { clearInterval(ballTimer); return; }
-                if(pool.length === 0) { winGame(); return; } // Auto-end if balls run out
+                if(pool.length === 0) { location.reload(); return; }
 
                 ballNow = pool.pop(); called.push(ballNow);
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
-                
-                const hist = document.getElementById('last3Row');
-                const last3 = called.slice(-4, -1).reverse();
-                hist.innerHTML = '';
-                for(let i=0; i<3; i++) {
-                    const b = document.createElement('div'); b.className='small-ball'; b.textContent = last3[i] || '--';
-                    hist.appendChild(b);
-                }
                 checkWin();
-            }, 4000);
+            }, 3500);
         }
 
         function checkWin() {
             const wins = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
             let isWin = wins.find(p => p.every(i => marked.has(i)));
-            // Check if win is valid and contains the MOST RECENT ball
             if(isWin && isWin.some(i => selectedCardData[i] === ballNow)) {
                 document.getElementById('bingoBtn').classList.add('on');
             }
         }
 
-        function winGame() {
+        function winGame(playerCount) {
             gameActive = false;
-            document.getElementById('winner-text').textContent = "YOU HAVE WON!";
-            document.getElementById('win-board-num').textContent = selectedCardId;
+            const prize = playerCount * 8;
+            document.getElementById('winner-text').textContent = "YOU WON!";
+            document.getElementById('win-amount').textContent = prize;
             const wv = document.getElementById('win-view'); wv.innerHTML = '';
             selectedCardData.forEach(n => {
                 const c = document.createElement('div'); c.className = 'p-cell'; c.textContent = n;
@@ -238,11 +214,8 @@
                 wv.appendChild(c);
             });
             document.getElementById('win-modal').style.display = 'flex';
-            
-            // This is the ONLY way to get back to selection: after a win.
-            setTimeout(() => { location.reload(); }, 10000);
+            setTimeout(() => { location.reload(); }, 8000);
         }
     </script>
 </body>
 </html>
-
