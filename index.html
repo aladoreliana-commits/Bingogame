@@ -161,14 +161,19 @@
         window.addEventListener('offline', () => document.getElementById('offline-overlay').style.display = 'flex');
         window.addEventListener('online', () => document.getElementById('offline-overlay').style.display = 'none');
 
-        // Voice Caller Logic
+        // FIXED: Robust Amharic Voice Caller
         function speakAmharic(num) {
-            let letter = (num <= 15) ? "B" : (num <= 30) ? "I" : (num <= 45) ? "N" : (num <= 60) ? "G" : "O";
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = `${letter}... ${num}`; 
-            msg.lang = 'am-ET'; 
-            msg.rate = 0.8; 
-            window.speechSynthesis.speak(msg);
+            try {
+                if (!window.speechSynthesis) return;
+                window.speechSynthesis.cancel(); // Clear any stuck speech
+                let letter = (num <= 15) ? "B" : (num <= 30) ? "I" : (num <= 45) ? "N" : (num <= 60) ? "G" : "O";
+                const msg = new SpeechSynthesisUtterance();
+                msg.text = `${letter}... ${num}`; 
+                msg.lang = 'am-ET'; 
+                msg.rate = 0.8; 
+                msg.volume = 1.0;
+                window.speechSynthesis.speak(msg);
+            } catch (e) { console.error("Speech Error", e); }
         }
 
         function updateSyncTimer() {
@@ -178,7 +183,12 @@
             let timeLeft = 20 - (seconds % 20);
             document.getElementById('timer').textContent = timeLeft;
             if (timeLeft === 1) {
-                setTimeout(() => { if (selectedCardId && !gameActive) startGame(Math.floor(Math.random() * 5) + 2); }, 1000);
+                // Ensure a card is selected before starting
+                setTimeout(() => { 
+                    if (selectedCardId && !gameActive) {
+                        startGame(Math.floor(Math.random() * 5) + 2); 
+                    }
+                }, 1100);
             }
         }
         setInterval(updateSyncTimer, 1000);
@@ -258,7 +268,9 @@
                 c.onclick = () => { if(called.includes(n)){ c.classList.add('hit'); marked.add(idx); checkWin(); }};
                 document.getElementById('pGrid').appendChild(c);
             });
-            initMaster(); runLoop();
+            initMaster(); 
+            // Small delay to ensure UI is ready before loop starts
+            setTimeout(runLoop, 500);
         }
 
         function initMaster() {
@@ -272,17 +284,25 @@
             }
         }
 
+        // FIXED: Game loop now independent of voice speed
         function runLoop() {
             let pool = Array.from({length:75},(_,i)=>i+1).sort(() => Math.random() - 0.5);
             const ballTimer = setInterval(() => {
                 if(!gameActive) { clearInterval(ballTimer); return; }
-                ballNow = pool.pop(); called.push(ballNow);
                 
-                speakAmharic(ballNow); // Voice Call
+                ballNow = pool.pop(); 
+                if(!ballNow) { clearInterval(ballTimer); return; }
+                
+                called.push(ballNow);
+                
+                // Call voice separately (won't stop the code if it fails)
+                speakAmharic(ballNow); 
 
+                // Update UI immediately
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
+                
                 const last3 = called.slice(-4, -1).reverse();
                 const histRow = document.getElementById('last3Row');
                 histRow.innerHTML = '';
@@ -292,7 +312,7 @@
                     histRow.appendChild(b);
                 }
                 checkWin();
-            }, 4000); // 4 seconds for voice clarity
+            }, 4000); 
         }
 
         function checkWin() {
@@ -300,7 +320,7 @@
                 [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24], 
                 [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24], 
                 [0,6,12,18,24],[4,8,12,16,20],
-                [0,4,20,24] // Four Corners Pattern
+                [0,4,20,24] 
             ];
             const lastBallOnCard = selectedCardData.includes(ballNow);
             if(wins.find(p => p.every(i => marked.has(i))) && lastBallOnCard) {
@@ -311,10 +331,12 @@
         function winGame(playerCount) {
             gameActive = false;
             
-            const winMsg = new SpeechSynthesisUtterance();
-            winMsg.text = "ቢንጎ! እንኳን ደስ አለዎት"; 
-            winMsg.lang = 'am-ET';
-            window.speechSynthesis.speak(winMsg);
+            try {
+                const winMsg = new SpeechSynthesisUtterance();
+                winMsg.text = "ቢንጎ! እንኳን ደስ አለዎት"; 
+                winMsg.lang = 'am-ET';
+                window.speechSynthesis.speak(winMsg);
+            } catch(e) {}
 
             const prize = playerCount * 8;
             currentBalance += prize; 
