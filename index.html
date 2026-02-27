@@ -11,9 +11,9 @@
         }
         body { background: var(--joy-bg); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        /* --- OFFLINE OVERLAY --- */
+        /* Offline Overlay */
         #offline-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
             color: white; text-align: center; padding: 20px;
         }
@@ -74,14 +74,15 @@
         .bingo-btn.on { background: var(--joy-green); pointer-events: auto; }
         
         #win-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .reset-btn { background: var(--joy-purple); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; margin-top: 15px; width: 100%; }
+        .win-card { background:white; border-radius:15px; width:100%; max-width:300px; text-align:center; overflow:hidden; }
+        .reset-btn { background: var(--joy-purple); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 15px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="offline-overlay">
-        <h2 style="margin-bottom:10px;">Connection Lost</h2>
-        <p>Please check your internet connection to continue playing.</p>
+        <h2>No Connection</h2>
+        <p>Please reconnect to continue the game.</p>
     </div>
 
     <div id="selection-header">
@@ -94,7 +95,7 @@
     <div id="selection-screen">
         <div class="sel-grid" id="cardGrid"></div>
         <div class="preview-pane" id="previewPane">
-            <p id="previewLabel" style="font-size:11px; margin-bottom:8px; color:#666;">Tap a card to enter round</p>
+            <p id="previewLabel" style="font-size:11px; margin-bottom:8px; color:#666;">Tap a card to join round</p>
             <div class="mini-grid" id="miniGrid" style="display:none;"></div>
         </div>
     </div>
@@ -130,11 +131,10 @@
     </div>
 
     <div id="win-modal">
-        <div style="background:white; border-radius:15px; width:100%; max-width:300px; text-align:center; overflow:hidden;">
+        <div class="win-card">
             <div style="background:var(--joy-orange); color:white; padding:15px; font-size:24px; font-weight:bold;">BINGO!</div>
             <div style="padding:20px;">
                 <p id="winMsg" style="font-weight:bold; font-size:18px; color:var(--joy-purple);">WINNER!</p>
-                <div class="grid-main" id="win-view" style="display:none;"></div>
                 <p style="font-size:15px; margin-top:12px; font-weight:bold;">Prize: <span id="win-amount">0</span> ETB</p>
                 <button class="reset-btn" onclick="closeWinModal()">PLAY NEXT ROUND</button>
             </div>
@@ -147,15 +147,16 @@
 
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
         
-        // --- 1. WALLET MANAGEMENT ---
+        // Sync Wallet from URL
         const params = new URLSearchParams(window.location.search);
         let currentBalance = parseInt(params.get('bal')) || 0;
         document.getElementById('wallet-bal').innerText = currentBalance;
 
-        // --- 2. INTERNET CONNECTION MONITOR ---
-        window.addEventListener('offline', () => { document.getElementById('offline-overlay').style.display = 'flex'; });
-        window.addEventListener('online', () => { document.getElementById('offline-overlay').style.display = 'none'; });
+        // Internet Monitoring
+        window.addEventListener('offline', () => document.getElementById('offline-overlay').style.display = 'flex');
+        window.addEventListener('online', () => document.getElementById('offline-overlay').style.display = 'none');
 
+        // Synchronized Timer
         function updateSyncTimer() {
             if (gameActive) return;
             const now = new Date();
@@ -167,8 +168,8 @@
                 setTimeout(() => {
                     if (selectedCardId && !gameActive) {
                         startGame(Math.floor(Math.random() * 5) + 2);
-                    } else {
-                        document.getElementById('previewLabel').textContent = "Waiting for players... Select a card!";
+                    } else if (!gameActive) {
+                        document.getElementById('previewLabel').textContent = "Pick a card before the timer ends!";
                     }
                 }, 1000);
             }
@@ -215,7 +216,7 @@
         function showPreview(id) {
             const mg = document.getElementById('miniGrid');
             mg.style.display = 'grid'; mg.innerHTML = '';
-            document.getElementById('previewLabel').textContent = "Joined Round with Card #" + id;
+            document.getElementById('previewLabel').textContent = "Card #" + id + " Selected";
             selectedCardData.forEach(n => {
                 const c = document.createElement('div');
                 c.className = n === 'F' ? 'mini-cell f-space' : 'mini-cell';
@@ -226,8 +227,7 @@
 
         function startGame(playerCount) {
             gameActive = true;
-            // Deduct entry fee (10)
-            currentBalance -= 10;
+            currentBalance -= 10; // Entry Stake
             document.getElementById('wallet-bal').innerText = currentBalance;
 
             document.getElementById('selection-header').style.display = 'none';
@@ -247,8 +247,7 @@
                 <div class="grid-main" id="pGrid"></div>
                 <button class="bingo-btn" id="bingoBtn" onclick="winGame(${playerCount})">BINGO</button>`;
 
-            marked.clear();
-            called = [];
+            marked.clear(); called = [];
             selectedCardData.forEach((n,idx)=>{
                 const c = document.createElement('div'); c.className = n==='F'?'p-cell hit':'p-cell'; c.textContent=n;
                 if(n==='F') marked.add(idx);
@@ -298,28 +297,31 @@
         function winGame(playerCount) {
             gameActive = false;
             const prize = playerCount * 8;
-            currentBalance += prize; // ADD WINNINGS TO WALLET
-            
+            currentBalance += prize; 
+
+            // SEND DATA TO TELEGRAM BOT
+            const winData = {
+                action: "update_balance",
+                prize: prize,
+                card: selectedCardId
+            };
+            tg.sendData(JSON.stringify(winData));
+
             document.getElementById('win-amount').textContent = prize;
             document.getElementById('win-modal').style.display = 'flex';
         }
 
         function closeWinModal() {
-            // Reset for next game
             document.getElementById('win-modal').style.display = 'none';
             document.getElementById('main-game-area').style.display = 'none';
             document.getElementById('game-stats-bar').style.display = 'none';
             document.getElementById('history-section').style.display = 'none';
-            
-            // Show selection again
             document.getElementById('selection-header').style.display = 'flex';
             document.getElementById('selection-screen').style.display = 'flex';
-            document.getElementById('wallet-bal').innerText = currentBalance; // Show new balance
-            
-            selectedCardId = null; 
+            document.getElementById('wallet-bal').innerText = currentBalance;
+            selectedCardId = null;
             document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
             document.getElementById('miniGrid').style.display = 'none';
-            document.getElementById('previewLabel').textContent = "Select a card for next round";
         }
     </script>
 </body>
