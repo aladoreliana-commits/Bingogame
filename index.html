@@ -11,12 +11,6 @@
         }
         body { background: var(--joy-bg); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        #offline-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            color: white; text-align: center; padding: 20px;
-        }
-
         #selection-header {
             display: flex; justify-content: space-around; align-items: center;
             background-color: white; width: 96%; margin: 10px auto;
@@ -80,11 +74,6 @@
 </head>
 <body>
 
-    <div id="offline-overlay">
-        <h2>No Connection</h2>
-        <p>Please reconnect to continue the game.</p>
-    </div>
-
     <div id="selection-header">
         <div class="header-stat"><div id="timer" class="stat-value timer-value">--</div></div>
         <div class="header-stat"><div class="stat-label">Wallet</div><div id="wallet-bal" class="stat-value">0</div></div>
@@ -146,6 +135,7 @@
         tg.expand();
 
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
+        let isStaked = false; // Tracks if the 10 ETB was deducted
         
         const params = new URLSearchParams(window.location.search);
         let currentBalance = parseInt(params.get('bal')) || 0;
@@ -158,7 +148,11 @@
             let timeLeft = 20 - (seconds % 20);
             document.getElementById('timer').textContent = timeLeft;
             if (timeLeft === 1) {
-                setTimeout(() => { if (selectedCardId && !gameActive) startGame(Math.floor(Math.random() * 5) + 2); }, 1000);
+                setTimeout(() => { 
+                    if (selectedCardId && !gameActive) {
+                        startGame(Math.floor(Math.random() * 5) + 2);
+                    } 
+                }, 1000);
             }
         }
         setInterval(updateSyncTimer, 1000);
@@ -190,6 +184,17 @@
             const d = document.createElement('div'); d.className='card-opt'; d.textContent=i;
             d.onclick=()=>{
                 if(gameActive) return;
+                
+                // FEATURE 1: Deduct 10 ETB immediately on selection if not already staked
+                if(!isStaked && currentBalance >= 10) {
+                    currentBalance -= 10;
+                    document.getElementById('wallet-bal').innerText = currentBalance;
+                    isStaked = true;
+                } else if (!isStaked && currentBalance < 10) {
+                    alert("Insufficient Balance!");
+                    return;
+                }
+
                 document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
                 d.classList.add('active'); 
                 selectedCardId=i;
@@ -213,8 +218,9 @@
 
         function startGame(playerCount) {
             gameActive = true;
-            currentBalance -= 10;
+            // Ensure UI shows the current balance (already deducted at selection)
             document.getElementById('wallet-bal').innerText = currentBalance;
+            
             document.getElementById('selection-header').style.display = 'none';
             document.getElementById('selection-screen').style.display = 'none';
             document.getElementById('game-stats-bar').style.display = 'grid';
@@ -253,12 +259,18 @@
         }
 
         function runLoop() {
-            let pool = Array.from({length:75},(_,i)=>i+1).sort(() => Math.random() - 0.5);
+            let pool = Array.from({length:75},(_,i)=>i+1);
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
             const ballTimer = setInterval(() => {
                 if(!gameActive) { clearInterval(ballTimer); return; }
                 ballNow = pool.pop(); 
+                if(!ballNow) { clearInterval(ballTimer); return; }
+                
                 called.push(ballNow);
-
                 document.getElementById('currBall').textContent = ballNow;
                 if(document.getElementById('m-'+ballNow)) document.getElementById('m-'+ballNow).classList.add('on');
                 document.getElementById('callCount').textContent = called.length;
@@ -271,7 +283,7 @@
                     histRow.appendChild(b);
                 }
                 checkWin();
-            }, 3000); // Back to fast 3-second speed
+            }, 3000); 
         }
 
         function checkWin() {
@@ -290,9 +302,13 @@
         function winGame(playerCount) {
             gameActive = false;
             const prize = playerCount * 8;
+            
+            // FEATURE 2: Add prize to current balance locally
             currentBalance += prize; 
+            
             const winData = { action: "update_balance", prize: prize, card: selectedCardId };
             tg.sendData(JSON.stringify(winData));
+            
             document.getElementById('win-amount').textContent = prize;
             document.getElementById('win-modal').style.display = 'flex';
         }
@@ -304,10 +320,16 @@
             document.getElementById('history-section').style.display = 'none';
             document.getElementById('selection-header').style.display = 'flex';
             document.getElementById('selection-screen').style.display = 'flex';
+            
+            // Refresh selection screen wallet with the new prize money added
             document.getElementById('wallet-bal').innerText = currentBalance;
+            
+            // Reset for next round
             selectedCardId = null;
+            isStaked = false; 
             document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
             document.getElementById('miniGrid').style.display = 'none';
+            document.getElementById('previewLabel').textContent = "Tap a card to join round";
         }
     </script>
 </body>
