@@ -23,6 +23,9 @@
         .stat-label { font-size: 10px; color: #9c27b0; font-weight: bold; text-transform: uppercase; }
         .stat-value { font-size: 18px; font-weight: bold; color: #333; }
         .timer-value { color: #e74c3c; font-size: 24px; }
+        
+        /* Negative balance style */
+        .debt { color: var(--joy-red) !important; }
 
         #selection-screen { position: fixed; inset: 0; background: var(--joy-bg); z-index: 2000; display: flex; flex-direction: column; padding-top: 80px; }
         .sel-grid { flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding-bottom: 180px; }
@@ -139,7 +142,17 @@
         
         const params = new URLSearchParams(window.location.search);
         let currentBalance = parseInt(params.get('bal')) || 0;
-        document.getElementById('wallet-bal').innerText = currentBalance;
+        
+        // Initial Wallet UI Setup
+        updateWalletDisplay();
+
+        function updateWalletDisplay() {
+            const balEl = document.getElementById('wallet-bal');
+            balEl.innerText = currentBalance;
+            // Highlight debt in red
+            if (currentBalance < 0) balEl.classList.add('debt');
+            else balEl.classList.remove('debt');
+        }
 
         function updateSyncTimer() {
             if (gameActive) return;
@@ -185,10 +198,15 @@
             d.onclick=()=>{
                 if(gameActive) return;
                 
-                // Allow "Credit Play": Deduct 10 even if it results in a negative balance
+                // RESTRICTION: Check if player is already in debt
+                if (currentBalance < 0 && !isStaked) {
+                    alert("Credit Play used! Win or deposit to play again.");
+                    return;
+                }
+
                 if(!isStaked) {
                     currentBalance -= 10;
-                    document.getElementById('wallet-bal').innerText = currentBalance;
+                    updateWalletDisplay();
                     isStaked = true;
                 }
 
@@ -215,7 +233,7 @@
 
         function startGame(playerCount) {
             gameActive = true;
-            document.getElementById('wallet-bal').innerText = currentBalance;
+            updateWalletDisplay();
             
             document.getElementById('selection-header').style.display = 'none';
             document.getElementById('selection-screen').style.display = 'none';
@@ -299,7 +317,6 @@
             gameActive = false;
             const prize = playerCount * 8;
             
-            // Winnings settle any negative balance automatically
             currentBalance += prize; 
             
             const winData = { action: "update_balance", prize: prize, card: selectedCardId };
@@ -317,7 +334,7 @@
             document.getElementById('selection-header').style.display = 'flex';
             document.getElementById('selection-screen').style.display = 'flex';
             
-            document.getElementById('wallet-bal').innerText = currentBalance;
+            updateWalletDisplay();
             
             selectedCardId = null;
             isStaked = false; 
