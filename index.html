@@ -135,7 +135,7 @@
         tg.expand();
 
         let selectedCardId=null, selectedCardData=null, called=[], marked=new Set(), gameActive=false, ballNow=null;
-        let isStaked = false; // Tracks if the 10 ETB was deducted
+        let isStaked = false; 
         
         const params = new URLSearchParams(window.location.search);
         let currentBalance = parseInt(params.get('bal')) || 0;
@@ -185,14 +185,11 @@
             d.onclick=()=>{
                 if(gameActive) return;
                 
-                // FEATURE 1: Deduct 10 ETB immediately on selection if not already staked
-                if(!isStaked && currentBalance >= 10) {
+                // Allow "Credit Play": Deduct 10 even if it results in a negative balance
+                if(!isStaked) {
                     currentBalance -= 10;
                     document.getElementById('wallet-bal').innerText = currentBalance;
                     isStaked = true;
-                } else if (!isStaked && currentBalance < 10) {
-                    alert("Insufficient Balance!");
-                    return;
                 }
 
                 document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
@@ -218,7 +215,6 @@
 
         function startGame(playerCount) {
             gameActive = true;
-            // Ensure UI shows the current balance (already deducted at selection)
             document.getElementById('wallet-bal').innerText = currentBalance;
             
             document.getElementById('selection-header').style.display = 'none';
@@ -303,7 +299,7 @@
             gameActive = false;
             const prize = playerCount * 8;
             
-            // FEATURE 2: Add prize to current balance locally
+            // Winnings settle any negative balance automatically
             currentBalance += prize; 
             
             const winData = { action: "update_balance", prize: prize, card: selectedCardId };
@@ -321,10 +317,8 @@
             document.getElementById('selection-header').style.display = 'flex';
             document.getElementById('selection-screen').style.display = 'flex';
             
-            // Refresh selection screen wallet with the new prize money added
             document.getElementById('wallet-bal').innerText = currentBalance;
             
-            // Reset for next round
             selectedCardId = null;
             isStaked = false; 
             document.querySelectorAll('.card-opt').forEach(el=>el.classList.remove('active'));
